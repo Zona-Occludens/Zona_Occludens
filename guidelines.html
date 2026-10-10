@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="color-scheme" content="dark light">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <title>Zona Guidelines</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="zona-themes.css">
+  <script src="theme-boot.js"></script>
+  <style>
+    /* ===== Base palette (dark). Other themes come from zona-themes.css + the blocks below ===== */
+    :root {
+      --font-head: 'Outfit', system-ui, sans-serif; --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+      --bg: #120a2f;
+      --bg-gradient: radial-gradient(circle at 15% 15%, rgba(251,146,60,.20) 0%, transparent 30%), radial-gradient(circle at 80% 80%, rgba(192,132,252,.20) 0%, transparent 32%), linear-gradient(135deg, #120a2f 0%, #1b0f3f 45%, #0d1026 100%);
+      --glass-surface: rgba(22,10,50,.72); --glass-border: rgba(251,146,60,.18);
+      --text-main: #F8F1E7; --text-muted: #d8c9d8; --text-dim: #b3a2c3;
+      --orange: #f59e0b; --green: #34d399; --red: #ef4444; --purple: #a855f7; --blue: #8b5cf6;
+      --surface-2: rgba(255,255,255,.04); --border-subtle: rgba(255,255,255,.08);
+      --radius: 14px; --safe-b: env(safe-area-inset-bottom, 0px);
+    }
+    [data-theme="light"] {
+      --bg: #f7f8fb; --bg-gradient: linear-gradient(135deg, #fdfdfd 0%, #eef4fb 55%, #e4ecf8 100%);
+      --glass-surface: rgba(255,255,255,.94); --glass-border: rgba(14,42,88,.14);
+      --text-main: #0F172A; --text-muted: #475569; --text-dim: #64748B;
+      --surface-2: rgba(15,23,42,.04); --border-subtle: rgba(15,23,42,.09);
+    }
+    [data-theme="oled"] { --bg: #000; --bg-gradient: linear-gradient(#000,#000); --glass-surface: rgba(10,10,12,.92); }
+    html[data-theme="light"] { color-scheme: light; } html:not([data-theme="light"]) { color-scheme: dark; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+    body { font-family: var(--font-body); background: var(--bg); background-image: var(--bg-gradient); background-attachment: fixed; color: var(--text-main); line-height: 1.6; -webkit-font-smoothing: antialiased; padding: 0 max(14px, env(safe-area-inset-left)) calc(24px + var(--safe-b)) max(14px, env(safe-area-inset-right)); }
+    .wrap { max-width: 920px; margin: 0 auto; }
+
+    /* ===== Sticky toolbar ===== */
+    .bar { position: sticky; top: 0; z-index: 10; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 12px 0; margin-bottom: 8px; background: linear-gradient(var(--bg) 70%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+    .bar h1 { font-family: var(--font-head); font-size: 1.15rem; flex: 1 1 auto; display: flex; gap: 10px; align-items: center; }
+    .bar h1 i { color: var(--orange); }
+    .search { flex: 1 1 220px; min-width: 0; min-height: 44px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--glass-surface); color: var(--text-main); font: inherit; font-size: 16px; }
+    .search:focus-visible, .btn:focus-visible, summary:focus-visible, label:focus-within { outline: 2px solid var(--orange); outline-offset: 2px; }
+    .btn { min-height: 44px; min-width: 44px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--glass-surface); color: var(--text-main); font: inherit; font-weight: 600; font-size: .85rem; cursor: pointer; display: inline-flex; gap: 8px; align-items: center; justify-content: center; transition: transform .15s, background .2s; }
+    .btn:hover { background: var(--surface-2); } .btn:active { transform: scale(.97); }
+
+    /* ===== Intro + cards ===== */
+    .intro { padding: 20px; border-radius: var(--radius); border: 1px solid var(--glass-border); border-top: 4px solid var(--blue); background: var(--glass-surface); margin-bottom: 14px; }
+    .intro h2 { font-family: var(--font-head); font-size: 1.3rem; color: var(--blue); margin-bottom: 4px; }
+    .intro p { color: var(--text-muted); font-size: .92rem; }
+    .stack { display: grid; gap: 12px; }
+    details.gl { border: 1px solid var(--glass-border); border-radius: var(--radius); background: var(--glass-surface); overflow: clip; animation: rise .5s both; }
+    details.gl details.gl { background: var(--surface-2); margin-top: 10px; }
+    details.gl > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 14px 16px; min-height: 52px; font-family: var(--font-head); font-weight: 600; font-size: 1rem; user-select: none; }
+    details.gl > summary::-webkit-details-marker { display: none; }
+    .gl-ico { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 10px; background: var(--surface-2); color: var(--orange); }
+    .chev { margin-left: auto; transition: transform .25s; color: var(--text-dim); }
+    details[open] > summary .chev { transform: rotate(180deg); }
+    .body { padding: 2px 16px 16px; color: var(--text-muted); font-size: .92rem; }
+    .body h4 { font-family: var(--font-head); color: var(--text-main); font-size: .95rem; margin: 14px 0 6px; }
+    .body ul, .body ol { padding-left: 1.2rem; display: grid; gap: 6px; }
+    .body strong { color: var(--text-main); }
+    .note { margin-top: 12px; padding: 10px 12px; border-radius: 10px; border-left: 3px solid var(--orange); background: var(--surface-2); font-size: .85rem; }
+    .hidden { display: none !important; }
+    mark { background: rgba(251,191,36,.35); color: inherit; border-radius: 3px; padding: 0 2px; }
+
+    /* ===== Checklist ===== */
+    .prog { display: flex; align-items: center; gap: 12px; margin: 8px 0 14px; font-size: .8rem; color: var(--text-muted); }
+    .prog .track { flex: 1; height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+    .prog .track i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--green), var(--orange)); transition: width .4s; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .checks { list-style: none; padding: 0 !important; display: grid; gap: 8px !important; }
+    .checks label { display: flex; gap: 12px; align-items: flex-start; padding: 12px; min-height: 48px; border-radius: 10px; background: var(--surface-2); cursor: pointer; border-left: 3px solid var(--green); }
+    .checks.dont label { border-left-color: var(--red); }
+    .checks input { width: 22px; height: 22px; flex: none; margin-top: 1px; accent-color: var(--green); }
+    .checks input:checked + span { text-decoration: line-through; opacity: .7; }
+
+    /* ===== 7-day plan ===== */
+    .plan7 { display: grid; gap: 8px; counter-reset: d 8; }
+    .plan7 > div { position: relative; padding: 12px 12px 12px 58px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border-subtle); }
+    .plan7 > div::before { counter-increment: d -1; content: 'D-' counter(d); position: absolute; left: 12px; top: 12px; font-weight: 800; color: var(--orange); font-size: .78rem; }
+    .empty { text-align: center; padding: 32px 12px; color: var(--text-dim); }
+    @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    html.embedded .bar h1 { display: none; }
+    @media (max-width: 640px) { .two { grid-template-columns: 1fr; } .bar h1 span { display: none; } }
+    @media (max-width: 480px) { #toggleAll span { display: none; } .bar { gap: 8px; } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ TOOLBAR ============ -->
+  <div class="bar">
+    <h1><i class="fas fa-book-bookmark" aria-hidden="true"></i><span>Guidelines</span></h1>
+    <input class="search" id="q" type="search" placeholder="Search guidelines…" aria-label="Search guidelines" maxlength="60" autocomplete="off">
+    <button class="btn" id="toggleAll" type="button" aria-expanded="false"><i class="fas fa-angles-down" aria-hidden="true"></i> <span>Expand all</span></button>
+  </div>
+
+  <div class="intro">
+    <h2>Guidelines &amp; Protocols</h2>
+    <p>Exam-day protocol, how to use your resources, how to revise, a daily do &amp; don't checklist and a 7-day emergency plan. Exam patterns change, so always confirm the final details in the official bulletin.</p>
+  </div>
+
+  <!-- =====================================================================
+       CONTENT AREA. To add a section, copy any <details class="gl" data-section> block below
+       and change the icon, title and body. Search and Expand-all pick it up automatically.
+       ===================================================================== -->
+  <main class="stack" id="content">
+
+    <details class="gl" data-section open>
+      <summary><span class="gl-ico"><i class="fas fa-clipboard-check" aria-hidden="true"></i></span> Exam-day protocol <i class="fas fa-chevron-down chev" aria-hidden="true"></i></summary>
+      <div class="body">
+        <h4>The night before (all exams)</h4>
+        <ul>
+          <li>Pack: admit card (2 printouts), original photo ID, permitted pen / ID proofs as per the bulletin. Leave electronics and notes behind.</li>
+          <li>Visit or map the centre, plan the route and a backup route. Aim to reach 60–90 minutes before reporting time.</li>
+          <li>Stop new topics. Skim your Mistake Notebook and RR notes for 45 minutes at most, then sleep 7+ hours.</li>
+        </ul>
+        <h4>In the exam hall (all exams)</h4>
+        <ul>
+          <li>Spend the first 2 minutes on instructions and the interface: navigation, mark-for-review, rough-sheet rules.</li>
+          <li>Pass 1: answer what you know. Pass 2: mark-and-return for the doubtful ones. Pass 3: educated guesses where the exam rewards them.</li>
+          <li>Check the clock at fixed milestones (every 50 questions). Don't change an answer unless you can state a concrete reason.</li>
+        </ul>
+
+        <details class="gl" data-section>
+          <summary><span class="gl-ico"><i class="fas fa-stethoscope" aria-hidden="true"></i></span> NEET PG <i class="fas fa-chevron-down chev" aria-hidden="true"></i></summary>
+          <div class="body">
+            <ul>
+              <li><strong>Format:</strong> computer-based MCQs, 180 questions, +4 for a correct answer and −1 for a wrong one.</li>
+              <li><strong>Strategy:</strong> negative marking is real, so skip an item when you can't narrow it to two options. Two-option guesses are worth taking.</li>
+              <li><strong>Time:</strong> budget roughly 50–60 seconds per question and bank time on image/one-liner questions for the long clinical vignettes.</li>
+              <li><strong>Subjects first:</strong> clear Medicine, Surgery, OBG, Paediatrics, PSM, Pathology, Pharmacology and Microbiology confidently. They carry the bulk of the paper.</li>
+            </ul>
+            <div class="note">Question count, duration and slot rules are set by the NBEMS bulletin for your attempt. Read it once, fully, a week before.</div>
+          </div>
+        </details>
+
+        <details class="gl" data-section>
+          <summary><span class="gl-ico"><i class="fas fa-hospital" aria-hidden="true"></i></span> INICET <i class="fas fa-chevron-down chev" aria-hidden="true"></i></summary>
+          <div class="body">
+            <ul>
+              <li><strong>Format:</strong> computer-based, 200-question pattern with +1 / −⅓ marking (as used in this app).</li>
+              <li><strong>Strategy:</strong> a −⅓ penalty means a guess between two options is positive expected value. Don't leave answerable questions blank.</li>
+              <li><strong>Content:</strong> INICET leans on detailed, reference-level facts and images. Spend your last fortnight on PYQs, images and high-yield tables.</li>
+              <li><strong>Pace:</strong> aim for a first pass finished with 20–25 minutes spare for flagged questions.</li>
+            </ul>
+            <div class="note">Check the AIIMS bulletin for the current paper pattern, duration and reporting rules.</div>
+          </div>
+        </details>
+
+        <details class="gl" data-section>
+          <summary><span class="gl-ico"><i class="fas fa-globe" aria-hidden="true"></i></span> FMGE <i class="fas fa-chevron-down chev" aria-hidden="true"></i></summary>
+          <div class="body">
+            <ul>
+              <li><strong>Format:</strong> 300 MCQs in two sessions of 150 (2.5 hours each), 1 mark per correct answer, <strong>no negative marking</strong>. You need 150/300 (50%) to pass.</li>
+              <li><strong>Strategy:</strong> never leave a blank. Eliminate and guess.</li>
+              <li><strong>Between sessions:</strong> eat, hydrate and don't re-litigate session 1. Treat session 2 as a fresh exam.</li>
+              <li><strong>Priority:</strong> PSM, Medicine, Surgery and OBG (~30 each) form the backbone. The pass mark is about being solid everywhere, not brilliant in one subject.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details class="gl" data-section>
+          <summary><span class="gl-ico"><i class="fas fa-landmark" aria-hidden="true"></i></span> UPSC CMS <i class="fas fa-chevron-down chev" aria-hidden="true"></i></summary>
+          <div class="body">
+            <ul>
+              <li><strong>Format:</strong> two papers of 120 questions, 2 hours each (Paper I: Medicine + Paediatrics, Paper II: Surgery, OBG, PSM). One-third negative marking, <strong>no calculators</strong>, no scribe.</li>
+              <li><strong>Strategy:</strong> because both papers are scored separately for qualifying, don't let one weak paper drag you. Pace each paper independently.</li>
+              <li><strong>Prep emphasis:</strong> use the PYTS page. CMS repeats topics heavily across years.</li>
+              <li><strong>Personality test:</strong> after clearing the written stage, keep your DAF, clinical reasoning and current health-policy basics ready.</li>
+            </ul>
+          </div>
+        </details>
+      </div>
+    </details>
+
+    <details class="gl" data-section>
+      <summary><span class="gl-ico"><i class="fas fa-layer-group" aria-hidden="true"></i></span> Resource usage protocol <i class="fas fa-chevron-down chev" aria-hidden="true"></i></summary>
+      <div class="body">
+        <h4>Main notes (first pass, R1)</h4>
+        <ul>
+          <li>One primary source per subject. Read actively: after each section close the page and write 3 recall points.</li>
+          <li>Annotate the margin with the Qbank question that tested the idea. This is what makes revision fast later.</li>
+          <li>Tick R1 in the Topic Library only when you can explain the topic without looking.</li>
+        </ul>
+        <h4>RR (rapid revision) notes &amp; videos</h4>
+        <ul>
+          <li>RR is for <strong>R2 and R3, never R1</strong>. It compresses what you already understand. It can't teach what you haven't.</li>
+          <li>One RR cycle = one subject in one sitting. Follow it with 20–40 MCQs from that subject the same day.</li>
+        </ul>
+        <h4>Qbanks</h4>
+        <ul>
+          <li>Do subject-wise timed blocks of 20–40 Qs. Review <strong>every</strong> question, right or wrong, within 24 hours.</li>
+          <li>Log every wrong or lucky-right item in the Mistake Notebook with the micro-topic. Re-read the notebook weekly.</li>
+          <li>Tag the source on each log so you can see which Qbank is giving you the weakest accuracy.</li>
+        </ul>
+        <h4>Avoid</h4>
+        <ul>
+          <li>Resource-hopping. Three resources revised thrice beat ten resources read once.</li>
+          <li>Passive video marathons without recall practice.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="gl" data-section>
+      <summary><span class="gl-ico"><i class="fas fa-rotate" aria-hidden="true"></i></span> Revision strategy: spaced repetition <i class="fas fa-chevron-down chev" aria-hidden="true"></i></summary>
+      <div class="body">
+        <p>Memory fades along a curve, and each well-timed recall flattens it. Spaced repetition means revisiting a topic <em>just as</em> you're about to forget it, so fewer revisions give longer retention.</p>
+        <h4>A practical schedule</h4>
+        <ol>
+          <li><strong>Day 0:</strong> first learning (R1 ✓).</li>
+          <li><strong>Day 1–2:</strong> 10-minute recall from memory plus 10 MCQs.</li>
+          <li><strong>Day 7:</strong> second pass from RR notes (R2 ✓).</li>
+          <li><strong>Day 21–30:</strong> third pass focused on mistakes and images (R3 ✓).</li>
+          <li><strong>Final 3 weeks:</strong> lock topics 🔒 you can answer cold. Keep only shaky topics in rotation.</li>
+        </ol>
+        <h4>Principles</h4>
+        <ul>
+          <li><strong>Active recall beats re-reading.</strong> Cover the page, retrieve, then check.</li>
+          <li><strong>Interleave</strong> subjects within a week so retrieval stays effortful.</li>
+          <li><strong>Lock honestly.</strong> A topic is locked only if you got it right in the last two Qbank attempts.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="gl" data-section open>
+      <summary><span class="gl-ico"><i class="fas fa-list-check" aria-hidden="true"></i></span> Do's &amp; Don'ts checklist <i class="fas fa-chevron-down chev" aria-hidden="true"></i></summary>
+      <div class="body">
+        <div class="prog"><span id="progText">0 / 0</span><div class="track" aria-hidden="true"><i id="progBar"></i></div></div>
+        <div class="two">
+          <div><h4 style="color:var(--green)"><i class="fas fa-circle-check" aria-hidden="true"></i> Do</h4><ul class="checks do" id="doList"></ul></div>
+          <div><h4 style="color:var(--red)"><i class="fas fa-circle-xmark" aria-hidden="true"></i> Don't (tick when you've avoided it today)</h4><ul class="checks dont" id="dontList"></ul></div>
+        </div>
+        <div style="margin-top:16px"><button class="btn" id="resetChecks" type="button"><i class="fas fa-rotate-left" aria-hidden="true"></i> Reset checklist</button></div>
+      </div>
+    </details>
+
+    <details class="gl" data-section>
+      <summary><span class="gl-ico"><i class="fas fa-truck-medical" aria-hidden="true"></i></span> Emergency plan: last 7 days <i class="fas fa-chevron-down chev" aria-hidden="true"></i></summary>
+      <div class="body">
+        <div class="plan7">
+          <div><strong>7 days out:</strong> one full-length mock under exam conditions. Triage the result: list your 10 weakest micro-topics from the Mistake Notebook. No new resources from here on.</div>
+          <div><strong>6 days out:</strong> RR pass on the heavy subjects (Medicine, Surgery, OBG, Paeds, PSM). 60 MCQs of mixed practice.</div>
+          <div><strong>5 days out:</strong> RR pass on Path, Pharma, Micro + image-based PYQs for these. Review the weak list from D-7.</div>
+          <div><strong>4 days out:</strong> RR pass on short subjects (ENT, Ophthal, FMT, Ortho, Derm, Psych, Anaesthesia, Radiology). One subject-wise test.</div>
+          <div><strong>3 days out:</strong> Pre-clinical rapid pass (Anatomy, Physiology, Biochem), one last mock. Review only, no debating answers.</div>
+          <div><strong>2 days out:</strong> Mistake Notebook, formulae, tables, drug lists, national programmes. Stop by evening, 30-minute walk.</div>
+          <div><strong>1 day out:</strong> light revision of locked 🔒 topics only (max 3 hours). Pack bag, verify route, sleep early. <em>No new topics, no mocks.</em></div>
+        </div>
+        <div class="note">If you have fewer than 7 days, keep the order but compress: heavy subjects → mistakes → short subjects → sleep.</div>
+      </div>
+    </details>
+
+    <!-- ADD NEW SECTIONS HERE -->
+
+    <p class="empty hidden" id="noResults">No guidelines match your search.</p>
+  </main>
+</div>
+<script src="guidelines.js"></script>
+</body>
+</html>

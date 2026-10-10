@@ -1,0 +1,70 @@
+/* =====================================================================
+   Zona Occludens: theme palettes (shared by index.html, guidelines.html, admin.html)
+   Themes: dark (default) | light | oled | midnight | solarized
+   The first three live in index.html's inline <style>; this file adds the
+   two new ones and the smooth theme-switch transition.
+   ===================================================================== */
+
+/* ---------- Midnight Blue ---------- */
+[data-theme="midnight"] {
+  --bg: #050b1f;
+  --bg-gradient: radial-gradient(circle at 12% 12%, rgba(56,189,248,0.20) 0%, transparent 32%),
+                 radial-gradient(circle at 88% 86%, rgba(99,102,241,0.22) 0%, transparent 34%),
+                 linear-gradient(135deg, #050b1f 0%, #081532 50%, #040918 100%);
+  --glass-surface: rgba(9, 21, 50, 0.76);
+  --glass-border: rgba(96, 165, 250, 0.20);
+  --glass-hover: rgba(255, 255, 255, 0.08);
+  --text-main: #e8f0ff; --text-muted: #b6c6e6; --text-dim: #869bc4;
+  --accent: #38bdf8; --accent-hover: #0ea5e9; --accent-glow: rgba(56,189,248,0.32);
+  --green: #34d399; --red: #f87171; --orange: #38bdf8; --amber: #fbbf24;
+  --purple: #818cf8; --blue: #60a5fa; --teal: #5eead4; --pink: #a78bfa;
+  --surface-2: rgba(255,255,255,0.045); --surface-3: rgba(0,10,40,0.34);
+  --border-subtle: rgba(147,197,253,0.10);
+  --card-border-grad: linear-gradient(135deg, rgba(56,189,248,0.38), rgba(255,255,255,0.04) 42%, rgba(129,140,248,0.34));
+  --inner-glow: inset 0 1px 0 rgba(255,255,255,0.06), inset 0 0 44px rgba(56,189,248,0.04);
+  --hm-0: rgba(255,255,255,0.06); --hm-1: rgba(56,189,248,0.28); --hm-2: rgba(56,189,248,0.5);
+  --hm-3: rgba(56,189,248,0.75); --hm-4: #38bdf8;
+  --overlay-scrim: rgba(2, 6, 20, 0.9);
+  --grad-brand: linear-gradient(135deg, #38bdf8, #818cf8);
+  --xp-grad: linear-gradient(90deg, #38bdf8, #818cf8, #a78bfa);
+}
+
+/* ---------- Solarized (dark variant) ---------- */
+[data-theme="solarized"] {
+  --bg: #002b36;
+  --bg-gradient: radial-gradient(circle at 14% 12%, rgba(181,137,0,0.16) 0%, transparent 32%),
+                 radial-gradient(circle at 86% 88%, rgba(38,139,210,0.16) 0%, transparent 34%),
+                 linear-gradient(135deg, #002b36 0%, #00313d 55%, #00252e 100%);
+  --glass-surface: rgba(7, 54, 66, 0.82);
+  --glass-border: rgba(147, 161, 161, 0.22);
+  --glass-hover: rgba(238,232,213,0.08);
+  --text-main: #eee8d5; --text-muted: #b8c0b8; --text-dim: #93a1a1;
+  --accent: #b58900; --accent-hover: #cb4b16; --accent-glow: rgba(181,137,0,0.32);
+  --green: #859900; --red: #dc322f; --orange: #cb4b16; --amber: #b58900;
+  --purple: #6c71c4; --blue: #268bd2; --teal: #2aa198; --pink: #d33682;
+  --surface-2: rgba(238,232,213,0.05); --surface-3: rgba(0,20,26,0.35);
+  --border-subtle: rgba(147,161,161,0.14);
+  --card-border-grad: linear-gradient(135deg, rgba(181,137,0,0.4), rgba(238,232,213,0.05) 42%, rgba(38,139,210,0.36));
+  --inner-glow: inset 0 1px 0 rgba(238,232,213,0.07), inset 0 0 44px rgba(181,137,0,0.04);
+  --hm-0: rgba(238,232,213,0.07); --hm-1: rgba(181,137,0,0.3); --hm-2: rgba(181,137,0,0.5);
+  --hm-3: rgba(203,75,22,0.7); --hm-4: #cb4b16;
+  --overlay-scrim: rgba(0, 20, 26, 0.92);
+  --grad-brand: linear-gradient(135deg, #b58900, #cb4b16);
+  --xp-grad: linear-gradient(90deg, #b58900, #cb4b16, #d33682);
+}
+[data-theme="solarized"] .top-header { background: rgba(0, 43, 54, 0.82); }
+[data-theme="solarized"] .modal-box, [data-theme="solarized"] .toast { background: #073642; background-image: none; }
+[data-theme="solarized"] .sidebar { background: #00252e; }
+[data-theme="midnight"] .top-header { background: rgba(5, 11, 31, 0.8); }
+[data-theme="midnight"] .modal-box, [data-theme="midnight"] .toast { background: #081532; background-image: none; }
+[data-theme="midnight"] .sidebar { background: #040a1a; }
+
+html[data-theme="midnight"], html[data-theme="solarized"] { color-scheme: dark; }
+
+/* ---------- Smooth theme switch (class is added for ~450ms by Zona.setTheme) ---------- */
+html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after {
+  transition: background-color .38s ease, color .38s ease, border-color .38s ease, box-shadow .38s ease, fill .38s ease, stroke .38s ease !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after { transition: none !important; }
+}

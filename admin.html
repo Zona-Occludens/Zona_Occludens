@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="dark light">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; img-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'">
+  <title>Zona Admin</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="zona-themes.css">
+  <script src="theme-boot.js"></script>
+  <style>
+    :root {
+      --font-head: 'Outfit', system-ui, sans-serif; --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+      --bg: #120a2f; --bg-gradient: radial-gradient(circle at 15% 15%, rgba(251,146,60,.18) 0%, transparent 30%), radial-gradient(circle at 80% 80%, rgba(192,132,252,.18) 0%, transparent 32%), linear-gradient(135deg,#120a2f,#1b0f3f 45%,#0d1026);
+      --glass-surface: rgba(22,10,50,.78); --glass-border: rgba(251,146,60,.18);
+      --text-main: #F8F1E7; --text-muted: #d8c9d8; --text-dim: #b3a2c3;
+      --orange: #f59e0b; --green: #34d399; --red: #ef4444; --purple: #a855f7; --blue: #8b5cf6;
+      --surface-2: rgba(255,255,255,.05); --border-subtle: rgba(255,255,255,.09);
+    }
+    [data-theme="light"] { --bg:#f7f8fb; --bg-gradient:linear-gradient(135deg,#fdfdfd,#e4ecf8); --glass-surface:rgba(255,255,255,.95); --glass-border:rgba(14,42,88,.14); --text-main:#0F172A; --text-muted:#475569; --text-dim:#64748B; --surface-2:rgba(15,23,42,.05); --border-subtle:rgba(15,23,42,.1); }
+    [data-theme="oled"] { --bg:#000; --bg-gradient:linear-gradient(#000,#000); }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-body); background: var(--bg); background-image: var(--bg-gradient); background-attachment: fixed; color: var(--text-main); min-height: 100vh; line-height: 1.5; -webkit-font-smoothing: antialiased; padding: 0 max(14px, env(safe-area-inset-left)) 40px; }
+    .wrap { max-width: 1180px; margin: 0 auto; }
+    .hidden { display: none !important; }
+    .card { background: var(--glass-surface); border: 1px solid var(--glass-border); border-radius: 16px; padding: 18px; backdrop-filter: blur(10px); animation: rise .45s both; }
+    h1, h2, h3 { font-family: var(--font-head); }
+    .btn { min-height: 44px; min-width: 44px; padding: 10px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--surface-2); color: var(--text-main); font: inherit; font-weight: 600; font-size: .85rem; cursor: pointer; display: inline-flex; gap: 8px; align-items: center; justify-content: center; transition: transform .15s, background .2s; }
+    .btn:hover { background: var(--glass-border); } .btn:active { transform: scale(.97); } .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn.primary { background: linear-gradient(135deg, var(--orange), var(--purple)); border: 0; color: #fff; }
+    .btn.danger { background: var(--red); border: 0; color: #fff; }
+    .btn.sm { min-height: 36px; min-width: 36px; padding: 6px 10px; font-size: .78rem; }
+    input, textarea, select { width: 100%; min-height: 44px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--surface-2); color: var(--text-main); font: inherit; font-size: 16px; }
+    textarea { min-height: 110px; resize: vertical; }
+    :focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+
+    /* login */
+    #login { min-height: 100vh; display: grid; place-items: center; }
+    #login .card { width: min(420px, 100%); text-align: center; display: grid; gap: 14px; padding: 28px 22px; }
+    #login img { width: 64px; margin: 0 auto; border-radius: 14px; }
+    .err { color: var(--red); font-size: .85rem; min-height: 1.2em; }
+
+    /* dashboard */
+    header.top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 18px 0; }
+    header.top h1 { font-size: 1.4rem; flex: 1; display: flex; align-items: center; gap: 10px; }
+    .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 14px; }
+    .tile small { color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em; font-size: .7rem; font-weight: 700; }
+    .tile b { display: block; font-family: var(--font-head); font-size: 2rem; margin-top: 4px; }
+    .tile.t1 b { color: var(--orange); } .tile.t2 b { color: var(--green); } .tile.t3 b { color: var(--purple); } .tile.t4 b { color: var(--blue); }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+    .bars { display: flex; align-items: flex-end; gap: 6px; height: 120px; margin-top: 12px; }
+    .bars div { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; font-size: .62rem; color: var(--text-dim); gap: 4px; }
+    .bars i { display: block; width: 100%; border-radius: 6px 6px 2px 2px; background: linear-gradient(var(--orange), var(--purple)); min-height: 3px; transition: height .5s; }
+    .hbar { display: grid; grid-template-columns: 110px 1fr 36px; gap: 8px; align-items: center; font-size: .82rem; margin-top: 8px; }
+    .hbar span.tr { height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; } .hbar span.tr i { display: block; height: 100%; background: linear-gradient(90deg, var(--orange), var(--purple)); }
+    .tools { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+    .tools input { flex: 1 1 220px; }
+    .tablewrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-subtle); }
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; min-width: 760px; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border-subtle); white-space: nowrap; }
+    th { color: var(--text-dim); font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; cursor: pointer; user-select: none; position: sticky; top: 0; background: var(--glass-surface); }
+    tr.blocked td { opacity: .55; }
+    .pill { padding: 2px 10px; border-radius: 99px; font-size: .72rem; font-weight: 700; background: var(--surface-2); }
+    .pill.ok { color: var(--green); } .pill.bad { color: var(--red); }
+    .acts { display: flex; gap: 6px; }
+    .list { display: grid; gap: 6px; max-height: 340px; overflow: auto; font-size: .82rem; }
+    .list div { padding: 8px 10px; border-radius: 10px; background: var(--surface-2); display: flex; gap: 10px; justify-content: space-between; flex-wrap: wrap; }
+    .list small { color: var(--text-dim); }
+    .note { font-size: .8rem; color: var(--text-dim); margin-top: 8px; }
+    code { background: var(--surface-2); padding: 1px 6px; border-radius: 6px; font-size: .8em; }
+
+    /* modal + toast */
+    .ov { position: fixed; inset: 0; background: rgba(5,7,22,.78); display: grid; place-items: center; padding: 16px; z-index: 50; }
+    .ov .card { width: min(520px, 100%); max-height: 86vh; overflow: auto; display: grid; gap: 12px; }
+    .toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--glass-surface); border: 1px solid var(--glass-border); padding: 12px 18px; border-radius: 12px; z-index: 60; max-width: 92vw; animation: rise .3s both; }
+    @keyframes rise { from { opacity: 0; transform: translate(var(--tx, 0), 10px); } to { opacity: 1; transform: translate(var(--tx, 0), 0); } }
+    .toast { --tx: -50%; }
+    @media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+
+  <!-- ============ LOGIN (PIN is validated by the backend; it is never stored in this page) ============ -->
+  <section id="login">
+    <form class="card" id="loginForm" autocomplete="off">
+      <img src="favicon.png" alt="">
+      <h1>Zona Admin</h1>
+      <p style="color:var(--text-muted);font-size:.9rem">Restricted area. Enter the admin PIN.</p>
+      <input id="pin" type="password" inputmode="text" autocomplete="off" placeholder="Admin PIN" aria-label="Admin PIN" maxlength="64" required>
+      <p class="err" id="loginErr" role="alert"></p>
+      <button class="btn primary" id="loginBtn" type="submit"><i class="fas fa-lock-open" aria-hidden="true"></i> Unlock</button>
+    </form>
+  </section>
+
+  <!-- ============ DASHBOARD ============ -->
+  <div class="wrap hidden" id="app">
+    <header class="top">
+      <h1><i class="fas fa-shield-halved" style="color:var(--orange)" aria-hidden="true"></i> Zona Admin</h1>
+      <button class="btn" id="refresh" type="button"><i class="fas fa-rotate" aria-hidden="true"></i> Refresh</button>
+      <button class="btn" id="logout" type="button"><i class="fas fa-right-from-bracket" aria-hidden="true"></i> Lock</button>
+    </header>
+
+    <section class="tiles" id="tiles" aria-live="polite"></section>
+
+    <section class="grid2">
+      <div class="card"><h3>New users, last 14 days</h3><div class="bars" id="signBars" aria-label="Signups per day"></div></div>
+      <div class="card"><h3>Users by exam</h3><div id="examBars"></div></div>
+    </section>
+
+    <section class="card" style="margin-bottom:14px">
+      <h3 style="margin-bottom:10px">Users</h3>
+      <div class="tools">
+        <input id="uSearch" type="search" placeholder="Search name, mobile or exam…" aria-label="Search users" maxlength="40">
+        <button class="btn" id="expJson" type="button"><i class="fas fa-file-code" aria-hidden="true"></i> Export JSON</button>
+        <button class="btn" id="expCsv" type="button"><i class="fas fa-file-csv" aria-hidden="true"></i> Export CSV</button>
+      </div>
+      <div class="tablewrap"><table>
+        <thead><tr id="thead"></tr></thead><tbody id="tbody"></tbody>
+      </table></div>
+      <p class="note" id="uCount"></p>
+    </section>
+
+    <section class="grid2">
+      <div class="card">
+        <h3>Broadcast to all users</h3>
+        <p class="note">Appears as an in-app announcement next time each student opens Zona (kept for 14 days). A copy is sent to your Telegram bot.</p>
+        <textarea id="bMsg" maxlength="500" placeholder="Write your message (max 500 characters)…" aria-label="Broadcast message"></textarea>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+          <small class="note" id="bCount">0 / 500</small>
+          <button class="btn primary" id="bSend" type="button"><i class="fas fa-bullhorn" aria-hidden="true"></i> Send broadcast</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Telegram bot</h3>
+        <p class="note">Message your bot from the admin chat only (other chats are ignored and logged):</p>
+        <div class="list" style="max-height:none;margin-top:8px">
+          <div><code>/stats</code><small>users, active, signups</small></div>
+          <div><code>/users</code><small>latest 15 users</small></div>
+          <div><code>/security</code><small>recent security events</small></div>
+          <div><code>/broadcast &lt;msg&gt;</code><small>announce to all users</small></div>
+          <div><code>/resetdevice &lt;mobile&gt;</code><small>unbind a user's device</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3 style="margin-bottom:10px">Security events <small class="note">(latest 100)</small></h3>
+      <div class="list" id="secList"></div>
+    </section>
+  </div>
+
+  <script src="zona-config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
