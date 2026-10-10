@@ -10,7 +10,7 @@
    rest. The admin PIN is NEVER stored here, it lives in Script Properties.
    ===================================================================== */
 window.ZONA_CONFIG = Object.freeze({
-  API_URL: 'https://script.google.com/macros/s/AKfycbwPXEvx1p9QvX6FbIQynvgaHkY25oiyyzVJKKtHmPwbz2b_sjnza47lYJ08WdZT1npLRQ/exec',
+  API_URL: 'https://script.google.com/macros/s/AKfycbxbtCCMgq0M79QO_PKOKnygVf2JxIrtRzmJZaTv9HCfw92CmONOP3JM6xONKVcwFG25dw/exec',
   API_KEY: '_w38qRp0GU2Js4LBtIxwJi70nC6Hd7O1V',
   INACTIVITY_LOCK_MIN: 15,        // auto-lock after N idle minutes
   DEFAULT_AUTOBACKUP_MIN: 15      // cloud snapshot interval (Settings can change it; 0 = off)
