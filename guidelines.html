@@ -1,268 +1,1616 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" class="light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="color-scheme" content="dark light">
-  <meta name="referrer" content="no-referrer">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'">
-  <title>Zona Guidelines</title>
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="zona-themes.css">
-  <script src="theme-boot.js"></script>
-  <style>
-    /* ===== Base palette (dark). Other themes come from zona-themes.css + the blocks below ===== */
-    :root {
-      --font-head: 'Outfit', system-ui, sans-serif; --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
-      --bg: #120a2f;
-      --bg-gradient: radial-gradient(circle at 15% 15%, rgba(251,146,60,.20) 0%, transparent 30%), radial-gradient(circle at 80% 80%, rgba(192,132,252,.20) 0%, transparent 32%), linear-gradient(135deg, #120a2f 0%, #1b0f3f 45%, #0d1026 100%);
-      --glass-surface: rgba(22,10,50,.72); --glass-border: rgba(251,146,60,.18);
-      --text-main: #F8F1E7; --text-muted: #d8c9d8; --text-dim: #b3a2c3;
-      --orange: #f59e0b; --green: #34d399; --red: #ef4444; --purple: #a855f7; --blue: #8b5cf6;
-      --surface-2: rgba(255,255,255,.04); --border-subtle: rgba(255,255,255,.08);
-      --radius: 14px; --safe-b: env(safe-area-inset-bottom, 0px);
-    }
-    [data-theme="light"] {
-      --bg: #f7f8fb; --bg-gradient: linear-gradient(135deg, #fdfdfd 0%, #eef4fb 55%, #e4ecf8 100%);
-      --glass-surface: rgba(255,255,255,.94); --glass-border: rgba(14,42,88,.14);
-      --text-main: #0F172A; --text-muted: #475569; --text-dim: #64748B;
-      --surface-2: rgba(15,23,42,.04); --border-subtle: rgba(15,23,42,.09);
-    }
-    [data-theme="oled"] { --bg: #000; --bg-gradient: linear-gradient(#000,#000); --glass-surface: rgba(10,10,12,.92); }
-    html[data-theme="light"] { color-scheme: light; } html:not([data-theme="light"]) { color-scheme: dark; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<title>Diagnostic Algorithms — Complete Vault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: { extend: { fontFamily: {
+      sans: ['Plus Jakarta Sans', 'sans-serif'],
+      mono: ['JetBrains Mono', 'monospace'],
+    }}}
+  }
+</script>
+<style>
+  /* ===== GLOBAL / MOBILE RESETS ===== */
+  html, body { overflow-x: hidden; max-width: 100vw; }
+  * { -webkit-tap-highlight-color: transparent; }
+  button, .note-card, .cat-btn, .hl-pt { touch-action: manipulation; }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { min-height: 100%; }
-    body { font-family: var(--font-body); background: var(--bg); background-image: var(--bg-gradient); background-attachment: fixed; color: var(--text-main); line-height: 1.6; -webkit-font-smoothing: antialiased; padding: 0 max(14px, env(safe-area-inset-left)) calc(24px + var(--safe-b)) max(14px, env(safe-area-inset-right)); }
-    .wrap { max-width: 920px; margin: 0 auto; }
+  @media (max-width: 640px) {
+    input, select, textarea { font-size: 16px !important; }
+  }
 
-    /* ===== Sticky toolbar ===== */
-    .bar { position: sticky; top: 0; z-index: 10; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 12px 0; margin-bottom: 8px; background: linear-gradient(var(--bg) 70%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-    .bar h1 { font-family: var(--font-head); font-size: 1.15rem; flex: 1 1 auto; display: flex; gap: 10px; align-items: center; }
-    .bar h1 i { color: var(--orange); }
-    .search { flex: 1 1 220px; min-width: 0; min-height: 44px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--glass-surface); color: var(--text-main); font: inherit; font-size: 16px; }
-    .search:focus-visible, .btn:focus-visible, summary:focus-visible, label:focus-within { outline: 2px solid var(--orange); outline-offset: 2px; }
-    .btn { min-height: 44px; min-width: 44px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--glass-surface); color: var(--text-main); font: inherit; font-weight: 600; font-size: .85rem; cursor: pointer; display: inline-flex; gap: 8px; align-items: center; justify-content: center; transition: transform .15s, background .2s; }
-    .btn:hover { background: var(--surface-2); } .btn:active { transform: scale(.97); }
+  /* ===== SCROLLBARS ===== */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+  .dark ::-webkit-scrollbar-thumb { background: #475569; }
 
-    /* ===== Intro + cards ===== */
-    .intro { padding: 20px; border-radius: var(--radius); border: 1px solid var(--glass-border); border-top: 4px solid var(--blue); background: var(--glass-surface); margin-bottom: 14px; }
-    .intro h2 { font-family: var(--font-head); font-size: 1.3rem; color: var(--blue); margin-bottom: 4px; }
-    .intro p { color: var(--text-muted); font-size: .92rem; }
-    .stack { display: grid; gap: 12px; }
-    details.gl { border: 1px solid var(--glass-border); border-radius: var(--radius); background: var(--glass-surface); overflow: clip; animation: rise .5s both; }
-    details.gl details.gl { background: var(--surface-2); margin-top: 10px; }
-    details.gl > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 14px 16px; min-height: 52px; font-family: var(--font-head); font-weight: 600; font-size: 1rem; user-select: none; }
-    details.gl > summary::-webkit-details-marker { display: none; }
-    .gl-ico { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 10px; background: var(--surface-2); color: var(--orange); }
-    .chev { margin-left: auto; transition: transform .25s; color: var(--text-dim); }
-    details[open] > summary .chev { transform: rotate(180deg); }
-    .body { padding: 2px 16px 16px; color: var(--text-muted); font-size: .92rem; }
-    .body h4 { font-family: var(--font-head); color: var(--text-main); font-size: .95rem; margin: 14px 0 6px; }
-    .body ul, .body ol { padding-left: 1.2rem; display: grid; gap: 6px; }
-    .body strong { color: var(--text-main); }
-    .note { margin-top: 12px; padding: 10px 12px; border-radius: 10px; border-left: 3px solid var(--orange); background: var(--surface-2); font-size: .85rem; }
-    .hidden { display: none !important; }
-    mark { background: rgba(251,191,36,.35); color: inherit; border-radius: 3px; padding: 0 2px; }
+  /* ===== HEADER ===== */
+  .glass-header { background: rgba(248, 250, 252, 0.9); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  .dark .glass-header { background: rgba(15, 23, 42, 0.9); }
 
-    /* ===== Checklist ===== */
-    .prog { display: flex; align-items: center; gap: 12px; margin: 8px 0 14px; font-size: .8rem; color: var(--text-muted); }
-    .prog .track { flex: 1; height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
-    .prog .track i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--green), var(--orange)); transition: width .4s; }
-    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .checks { list-style: none; padding: 0 !important; display: grid; gap: 8px !important; }
-    .checks label { display: flex; gap: 12px; align-items: flex-start; padding: 12px; min-height: 48px; border-radius: 10px; background: var(--surface-2); cursor: pointer; border-left: 3px solid var(--green); }
-    .checks.dont label { border-left-color: var(--red); }
-    .checks input { width: 22px; height: 22px; flex: none; margin-top: 1px; accent-color: var(--green); }
-    .checks input:checked + span { text-decoration: line-through; opacity: .7; }
+  /* ===== NOTE CARDS ===== */
+  .note-card { transition: transform .2s ease, box-shadow .2s ease; }
+  .note-card:hover { transform: translateY(-2px); }
+  .blur-text { filter: blur(5px); user-select: none; transition: filter .2s ease; }
+  .blur-text:hover { filter: blur(0); }
 
-    /* ===== 7-day plan ===== */
-    .plan7 { display: grid; gap: 8px; counter-reset: d 8; }
-    .plan7 > div { position: relative; padding: 12px 12px 12px 58px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border-subtle); }
-    .plan7 > div::before { counter-increment: d -1; content: 'D-' counter(d); position: absolute; left: 12px; top: 12px; font-weight: 800; color: var(--orange); font-size: .78rem; }
-    .empty { text-align: center; padding: 32px 12px; color: var(--text-dim); }
-    @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-    html.embedded .bar h1 { display: none; }
-    @media (max-width: 640px) { .two { grid-template-columns: 1fr; } .bar h1 span { display: none; } }
-    @media (max-width: 480px) { #toggleAll span { display: none; } .bar { gap: 8px; } }
-    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
-  </style>
+  /* ===== SIDEBAR ===== */
+  #sidebar { transition: transform .3s ease; }
+
+  /* ===== HIGHLIGHT MODE ===== */
+  .hl-pt { cursor: default; }
+  .hl-pt.hl-active-mode { cursor: pointer; }
+  .hl-pt.hl-active-mode:hover { outline: 2px dashed #f59e0b; outline-offset: 1px; }
+
+  /* ===== CATEGORY CHIPS ===== */
+  .cat-btn { min-height: 36px; display: inline-flex; align-items: center; }
+  @media (max-width: 640px) {
+    .cat-btn { min-height: 40px; padding-left: 0.875rem; padding-right: 0.875rem; }
+  }
+
+  /* ===== FLIP CARD VIEW ===== */
+  .flip-view .note-card {
+    aspect-ratio: 3 / 4;
+    min-height: 320px;
+    cursor: pointer;
+    perspective: 1200px;
+  }
+  @media (max-width: 640px) {
+    .flip-view .note-card { min-height: 280px; }
+    .flip-face { padding: 0.75rem; }
+    .flip-back h3 { font-size: 0.95rem; }
+  }
+  .flip-view .note-card:hover { transform: none; }
+  .flip-view .note-card.flipped .flip-inner { transform: rotateY(180deg); }
+  .flip-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform .55s cubic-bezier(.4,.2,.2,1);
+  }
+  .flip-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 1rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    overflow: hidden;
+  }
+  .dark .flip-face { background: #1e293b; }
+  .flip-back { transform: rotateY(180deg); overflow-y: auto; }
+  .flip-back::-webkit-scrollbar { width: 4px; }
+  .flip-back::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 999px; }
+
+  /* ===== ALGORITHM STEP STYLES ===== */
+  .algo-step {
+    position: relative;
+    padding-left: 28px;
+    margin-bottom: 10px;
+  }
+  .algo-step::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    bottom: -10px;
+    width: 2px;
+    background: #cbd5e1;
+  }
+  .dark .algo-step::before { background: #475569; }
+  .algo-step:last-child::before { display: none; }
+  .algo-step-num {
+    position: absolute;
+    left: 0;
+    top: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #0ea5e9;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+  }
+  /* branch coloring by step type */
+  .algo-step[data-type="yes"] .algo-step-num { background: #22c55e; }
+  .algo-step[data-type="no"] .algo-step-num { background: #ef4444; }
+  .algo-step[data-type="decision"] .algo-step-num { background: #f59e0b; }
+  .algo-step[data-type="terminal"] .algo-step-num { background: #14b8a6; }
+</style>
 </head>
-<body>
-<div class="wrap">
+<body class="min-h-screen pb-28 sm:pb-20 bg-slate-50 dark:bg-slate-950 transition-colors">
 
-  <!-- ============ TOOLBAR ============ -->
-  <div class="bar">
-    <h1><i class="fas fa-book-bookmark" aria-hidden="true"></i><span>Guidelines</span></h1>
-    <input class="search" id="q" type="search" placeholder="Search guidelines…" aria-label="Search guidelines" maxlength="60" autocomplete="off">
-    <button class="btn" id="toggleAll" type="button" aria-expanded="false"><i class="fas fa-angles-down" aria-hidden="true"></i> <span>Expand all</span></button>
+<!-- ============ SIDEBAR (SYSTEMS) ============ -->
+<div id="sidebarOverlay" class="fixed inset-0 bg-black/40 z-[60] hidden" onclick="closeSidebar()"></div>
+<aside id="sidebar" class="fixed top-0 left-0 h-full w-[85vw] max-w-[300px] sm:w-[280px] sm:max-w-[85vw] bg-white dark:bg-slate-900 z-[70] shadow-2xl -translate-x-full overflow-y-auto no-scrollbar">
+  <div class="sticky top-0 bg-white dark:bg-slate-900 p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between z-10">
+    <h2 class="font-extrabold text-slate-900 dark:text-white flex items-center gap-2">🧭 Systems</h2>
+    <button onclick="closeSidebar()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white text-xl leading-none">✕</button>
+  </div>
+  <div id="sidebarList" class="p-2"></div>
+  <div class="p-4 border-t border-slate-200 dark:border-slate-800 space-y-2 mt-2">
+    <p class="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 mb-1">Backup & Sync</p>
+    <button onclick="exportBackup()" class="w-full py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold hover:opacity-90 transition">⬇️ Export Backup (JSON)</button>
+    <label class="w-full block text-center py-2 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 cursor-pointer hover:border-sky-500 transition">
+      ⬆️ Import Backup
+      <input type="file" accept="application/json" class="hidden" onchange="importBackup(event)">
+    </label>
+    <button onclick="resetAllData()" class="w-full py-2 rounded-xl border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 text-xs font-bold hover:bg-rose-50 dark:hover:bg-rose-950/40 transition">↺ Reset All to Default</button>
+    <p class="text-[10px] text-slate-400 dark:text-slate-500 text-center leading-relaxed pt-1">Every bookmark / highlight / edit autosaves to this browser instantly. Export a backup file regularly.</p>
+  </div>
+</aside>
+
+<!-- ============ HEADER ============ -->
+<header class="sticky top-0 z-50 glass-header border-b border-slate-200 dark:border-slate-800">
+  <div class="max-w-6xl mx-auto px-3 py-3 flex items-center justify-between gap-2">
+    <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+      <button onclick="openSidebar()" class="p-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition flex-shrink-0" title="Systems menu">☰</button>
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-600 flex items-center justify-center text-white font-extrabold text-lg shadow-md shadow-sky-500/20 flex-shrink-0">🧭</div>
+      <div class="min-w-0">
+        <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2 truncate">
+          Diagnostic Algorithms <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300 hidden sm:inline">96 Algorithms</span>
+        </h1>
+        <p class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium truncate">Step-by-step clinical flowcharts</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0 overflow-x-auto no-scrollbar max-w-[60%] sm:max-w-none">
+      <button id="viewToggleBtn" onclick="toggleViewMode()" class="px-2 sm:px-3 py-1.5 rounded-lg text-[11px] font-bold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition flex items-center gap-1" title="Toggle view mode">
+        <span id="viewToggleIcon">📝</span><span id="viewToggleLabel" class="hidden md:inline">Notes</span>
+      </button>
+      <button id="hlModeBtn" onclick="toggleHighlightMode()" class="px-2 sm:px-3 py-1.5 rounded-lg text-[11px] font-bold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition flex items-center gap-1">
+        <span>🖍️</span><span id="hlModeLabel" class="hidden md:inline">Highlight: OFF</span>
+      </button>
+      <button id="testModeBtn" onclick="toggleTestMode()" class="px-2 sm:px-3 py-1.5 rounded-lg text-[11px] font-bold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition flex items-center gap-1">
+        <span>👁️</span><span id="testModeLabel" class="hidden md:inline">Self-Test: OFF</span>
+      </button>
+      <button onclick="toggleTheme()" class="p-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+        <span id="themeIcon">🌙</span>
+      </button>
+      <div class="px-2.5 py-1.5 rounded-full bg-sky-50 dark:bg-sky-950/80 border border-sky-200 dark:border-sky-800 text-sky-700 dark:text-sky-300 text-[11px] font-bold whitespace-nowrap" id="countPill">0</div>
+    </div>
+  </div>
+</header>
+
+<div class="max-w-6xl mx-auto px-3 pt-3">
+  <div id="activeSystemChip" class="hidden mb-2">
+    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-600 text-white text-xs font-bold shadow-sm">
+      📖 <span id="activeSystemName"></span>
+      <button onclick="setSystemFilter('All')" class="ml-1 hover:text-indigo-200 font-black">✕</button>
+    </span>
   </div>
 
-  <div class="intro">
-    <h2>Guidelines &amp; Protocols</h2>
-    <p>Exam-day protocol, how to use your resources, how to revise, a daily do &amp; don't checklist and a 7-day emergency plan. Exam patterns change, so always confirm the final details in the official bulletin.</p>
+  <div class="relative mb-3">
+    <input id="searchInput" type="text" placeholder="Search algorithm, condition, step…" 
+      class="w-full pl-10 pr-10 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-base sm:text-sm font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-sm transition" />
+    <svg class="w-5 h-5 absolute left-3 top-3.5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    <button id="clearSearch" onclick="clearSearchInput()" class="hidden absolute right-3 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-bold text-sm">✕</button>
   </div>
 
-  <!-- =====================================================================
-       CONTENT AREA. To add a section, copy any <details class="gl" data-section> block below
-       and change the icon, title and body. Search and Expand-all pick it up automatically.
-       ===================================================================== -->
-  <main class="stack" id="content">
+  <div class="flex items-center gap-2 mb-3 overflow-x-auto pb-1 text-xs font-bold no-scrollbar">
+    <button onclick="setCategoryFilter('ALL')" id="cat-ALL" class="cat-btn px-3 py-1.5 rounded-lg border bg-sky-600 text-white border-sky-600 transition whitespace-nowrap">All</button>
+    <button onclick="setCategoryFilter('DIAGNOSIS')" id="cat-DIAGNOSIS" class="cat-btn px-3 py-1.5 rounded-lg border bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 transition whitespace-nowrap">🔍 Diagnosis</button>
+    <button onclick="setCategoryFilter('MANAGEMENT')" id="cat-MANAGEMENT" class="cat-btn px-3 py-1.5 rounded-lg border bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 transition whitespace-nowrap">💊 Management</button>
+    <button onclick="setCategoryFilter('RESUSCITATION')" id="cat-RESUSCITATION" class="cat-btn px-3 py-1.5 rounded-lg border bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 transition whitespace-nowrap">🚑 Resuscitation</button>
+    <button onclick="setCategoryFilter('ACID_BASE')" id="cat-ACID_BASE" class="cat-btn px-3 py-1.5 rounded-lg border bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 transition whitespace-nowrap">⚗️ Acid-Base</button>
+    <button onclick="setCategoryFilter('BOOKMARKS')" id="cat-BOOKMARKS" class="cat-btn px-3 py-1.5 rounded-lg border bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-amber-600 dark:text-amber-400 transition whitespace-nowrap">⭐ Saved (<span id="bookmarkCount">0</span>)</button>
+  </div>
 
-    <details class="gl" data-section open>
-      <summary><span class="gl-ico"><i class="fas fa-clipboard-check" aria-hidden="true"></i></span> Exam-day protocol <i class="fas fa-chevron-down chev" aria-hidden="true"></i></summary>
-      <div class="body">
-        <h4>The night before (all exams)</h4>
-        <ul>
-          <li>Pack: admit card (2 printouts), original photo ID, permitted pen / ID proofs as per the bulletin. Leave electronics and notes behind.</li>
-          <li>Visit or map the centre, plan the route and a backup route. Aim to reach 60–90 minutes before reporting time.</li>
-          <li>Stop new topics. Skim your Mistake Notebook and RR notes for 45 minutes at most, then sleep 7+ hours.</li>
-        </ul>
-        <h4>In the exam hall (all exams)</h4>
-        <ul>
-          <li>Spend the first 2 minutes on instructions and the interface: navigation, mark-for-review, rough-sheet rules.</li>
-          <li>Pass 1: answer what you know. Pass 2: mark-and-return for the doubtful ones. Pass 3: educated guesses where the exam rewards them.</li>
-          <li>Check the clock at fixed milestones (every 50 questions). Don't change an answer unless you can state a concrete reason.</li>
-        </ul>
-
-        <details class="gl" data-section>
-          <summary><span class="gl-ico"><i class="fas fa-stethoscope" aria-hidden="true"></i></span> NEET PG <i class="fas fa-chevron-down chev" aria-hidden="true"></i></summary>
-          <div class="body">
-            <ul>
-              <li><strong>Format:</strong> computer-based MCQs, 180 questions, +4 for a correct answer and −1 for a wrong one.</li>
-              <li><strong>Strategy:</strong> negative marking is real, so skip an item when you can't narrow it to two options. Two-option guesses are worth taking.</li>
-              <li><strong>Time:</strong> budget roughly 50–60 seconds per question and bank time on image/one-liner questions for the long clinical vignettes.</li>
-              <li><strong>Subjects first:</strong> clear Medicine, Surgery, OBG, Paediatrics, PSM, Pathology, Pharmacology and Microbiology confidently. They carry the bulk of the paper.</li>
-            </ul>
-            <div class="note">Question count, duration and slot rules are set by the NBEMS bulletin for your attempt. Read it once, fully, a week before.</div>
-          </div>
-        </details>
-
-        <details class="gl" data-section>
-          <summary><span class="gl-ico"><i class="fas fa-hospital" aria-hidden="true"></i></span> INICET <i class="fas fa-chevron-down chev" aria-hidden="true"></i></summary>
-          <div class="body">
-            <ul>
-              <li><strong>Format:</strong> computer-based, 200-question pattern with +1 / −⅓ marking (as used in this app).</li>
-              <li><strong>Strategy:</strong> a −⅓ penalty means a guess between two options is positive expected value. Don't leave answerable questions blank.</li>
-              <li><strong>Content:</strong> INICET leans on detailed, reference-level facts and images. Spend your last fortnight on PYQs, images and high-yield tables.</li>
-              <li><strong>Pace:</strong> aim for a first pass finished with 20–25 minutes spare for flagged questions.</li>
-            </ul>
-            <div class="note">Check the AIIMS bulletin for the current paper pattern, duration and reporting rules.</div>
-          </div>
-        </details>
-
-        <details class="gl" data-section>
-          <summary><span class="gl-ico"><i class="fas fa-globe" aria-hidden="true"></i></span> FMGE <i class="fas fa-chevron-down chev" aria-hidden="true"></i></summary>
-          <div class="body">
-            <ul>
-              <li><strong>Format:</strong> 300 MCQs in two sessions of 150 (2.5 hours each), 1 mark per correct answer, <strong>no negative marking</strong>. You need 150/300 (50%) to pass.</li>
-              <li><strong>Strategy:</strong> never leave a blank. Eliminate and guess.</li>
-              <li><strong>Between sessions:</strong> eat, hydrate and don't re-litigate session 1. Treat session 2 as a fresh exam.</li>
-              <li><strong>Priority:</strong> PSM, Medicine, Surgery and OBG (~30 each) form the backbone. The pass mark is about being solid everywhere, not brilliant in one subject.</li>
-            </ul>
-          </div>
-        </details>
-
-        <details class="gl" data-section>
-          <summary><span class="gl-ico"><i class="fas fa-landmark" aria-hidden="true"></i></span> UPSC CMS <i class="fas fa-chevron-down chev" aria-hidden="true"></i></summary>
-          <div class="body">
-            <ul>
-              <li><strong>Format:</strong> two papers of 120 questions, 2 hours each (Paper I: Medicine + Paediatrics, Paper II: Surgery, OBG, PSM). One-third negative marking, <strong>no calculators</strong>, no scribe.</li>
-              <li><strong>Strategy:</strong> because both papers are scored separately for qualifying, don't let one weak paper drag you. Pace each paper independently.</li>
-              <li><strong>Prep emphasis:</strong> use the PYTS page. CMS repeats topics heavily across years.</li>
-              <li><strong>Personality test:</strong> after clearing the written stage, keep your DAF, clinical reasoning and current health-policy basics ready.</li>
-            </ul>
-          </div>
-        </details>
-      </div>
-    </details>
-
-    <details class="gl" data-section>
-      <summary><span class="gl-ico"><i class="fas fa-layer-group" aria-hidden="true"></i></span> Resource usage protocol <i class="fas fa-chevron-down chev" aria-hidden="true"></i></summary>
-      <div class="body">
-        <h4>Main notes (first pass, R1)</h4>
-        <ul>
-          <li>One primary source per subject. Read actively: after each section close the page and write 3 recall points.</li>
-          <li>Annotate the margin with the Qbank question that tested the idea. This is what makes revision fast later.</li>
-          <li>Tick R1 in the Topic Library only when you can explain the topic without looking.</li>
-        </ul>
-        <h4>RR (rapid revision) notes &amp; videos</h4>
-        <ul>
-          <li>RR is for <strong>R2 and R3, never R1</strong>. It compresses what you already understand. It can't teach what you haven't.</li>
-          <li>One RR cycle = one subject in one sitting. Follow it with 20–40 MCQs from that subject the same day.</li>
-        </ul>
-        <h4>Qbanks</h4>
-        <ul>
-          <li>Do subject-wise timed blocks of 20–40 Qs. Review <strong>every</strong> question, right or wrong, within 24 hours.</li>
-          <li>Log every wrong or lucky-right item in the Mistake Notebook with the micro-topic. Re-read the notebook weekly.</li>
-          <li>Tag the source on each log so you can see which Qbank is giving you the weakest accuracy.</li>
-        </ul>
-        <h4>Avoid</h4>
-        <ul>
-          <li>Resource-hopping. Three resources revised thrice beat ten resources read once.</li>
-          <li>Passive video marathons without recall practice.</li>
-        </ul>
-      </div>
-    </details>
-
-    <details class="gl" data-section>
-      <summary><span class="gl-ico"><i class="fas fa-rotate" aria-hidden="true"></i></span> Revision strategy: spaced repetition <i class="fas fa-chevron-down chev" aria-hidden="true"></i></summary>
-      <div class="body">
-        <p>Memory fades along a curve, and each well-timed recall flattens it. Spaced repetition means revisiting a topic <em>just as</em> you're about to forget it, so fewer revisions give longer retention.</p>
-        <h4>A practical schedule</h4>
-        <ol>
-          <li><strong>Day 0:</strong> first learning (R1 ✓).</li>
-          <li><strong>Day 1–2:</strong> 10-minute recall from memory plus 10 MCQs.</li>
-          <li><strong>Day 7:</strong> second pass from RR notes (R2 ✓).</li>
-          <li><strong>Day 21–30:</strong> third pass focused on mistakes and images (R3 ✓).</li>
-          <li><strong>Final 3 weeks:</strong> lock topics 🔒 you can answer cold. Keep only shaky topics in rotation.</li>
-        </ol>
-        <h4>Principles</h4>
-        <ul>
-          <li><strong>Active recall beats re-reading.</strong> Cover the page, retrieve, then check.</li>
-          <li><strong>Interleave</strong> subjects within a week so retrieval stays effortful.</li>
-          <li><strong>Lock honestly.</strong> A topic is locked only if you got it right in the last two Qbank attempts.</li>
-        </ul>
-      </div>
-    </details>
-
-    <details class="gl" data-section open>
-      <summary><span class="gl-ico"><i class="fas fa-list-check" aria-hidden="true"></i></span> Do's &amp; Don'ts checklist <i class="fas fa-chevron-down chev" aria-hidden="true"></i></summary>
-      <div class="body">
-        <div class="prog"><span id="progText">0 / 0</span><div class="track" aria-hidden="true"><i id="progBar"></i></div></div>
-        <div class="two">
-          <div><h4 style="color:var(--green)"><i class="fas fa-circle-check" aria-hidden="true"></i> Do</h4><ul class="checks do" id="doList"></ul></div>
-          <div><h4 style="color:var(--red)"><i class="fas fa-circle-xmark" aria-hidden="true"></i> Don't (tick when you've avoided it today)</h4><ul class="checks dont" id="dontList"></ul></div>
-        </div>
-        <div style="margin-top:16px"><button class="btn" id="resetChecks" type="button"><i class="fas fa-rotate-left" aria-hidden="true"></i> Reset checklist</button></div>
-      </div>
-    </details>
-
-    <details class="gl" data-section>
-      <summary><span class="gl-ico"><i class="fas fa-truck-medical" aria-hidden="true"></i></span> Emergency plan: last 7 days <i class="fas fa-chevron-down chev" aria-hidden="true"></i></summary>
-      <div class="body">
-        <div class="plan7">
-          <div><strong>7 days out:</strong> one full-length mock under exam conditions. Triage the result: list your 10 weakest micro-topics from the Mistake Notebook. No new resources from here on.</div>
-          <div><strong>6 days out:</strong> RR pass on the heavy subjects (Medicine, Surgery, OBG, Paeds, PSM). 60 MCQs of mixed practice.</div>
-          <div><strong>5 days out:</strong> RR pass on Path, Pharma, Micro + image-based PYQs for these. Review the weak list from D-7.</div>
-          <div><strong>4 days out:</strong> RR pass on short subjects (ENT, Ophthal, FMT, Ortho, Derm, Psych, Anaesthesia, Radiology). One subject-wise test.</div>
-          <div><strong>3 days out:</strong> Pre-clinical rapid pass (Anatomy, Physiology, Biochem), one last mock. Review only, no debating answers.</div>
-          <div><strong>2 days out:</strong> Mistake Notebook, formulae, tables, drug lists, national programmes. Stop by evening, 30-minute walk.</div>
-          <div><strong>1 day out:</strong> light revision of locked 🔒 topics only (max 3 hours). Pack bag, verify route, sleep early. <em>No new topics, no mocks.</em></div>
-        </div>
-        <div class="note">If you have fewer than 7 days, keep the order but compress: heavy subjects → mistakes → short subjects → sleep.</div>
-      </div>
-    </details>
-
-    <!-- ADD NEW SECTIONS HERE -->
-
-    <p class="empty hidden" id="noResults">No guidelines match your search.</p>
-  </main>
+  <div class="flex gap-1.5 overflow-x-auto pb-2 text-xs no-scrollbar" id="systemChips"></div>
 </div>
+
+<main class="max-w-6xl mx-auto px-2.5 sm:px-3 py-3">
+  <div id="contentGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4"></div>
+  <div id="emptyState" class="hidden text-center py-16 px-4">
+    <div class="text-4xl mb-3">🔍</div>
+    <h3 class="text-base font-bold text-slate-800 dark:text-slate-200">No algorithms found</h3>
+    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Try adjusting your search or filter.</p>
+  </div>
+  <div class="text-center py-4">
+    <button id="loadMoreBtn" onclick="loadMore()" class="hidden px-5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-sm">Load More</button>
+  </div>
+</main>
+
+<!-- ============ FLOATING BUTTONS ============ -->
+<button id="backTopBtn" onclick="scrollToTop()" class="fixed bottom-5 right-5 w-11 h-11 rounded-full bg-sky-600 text-white shadow-lg flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300 z-40 hover:bg-sky-500">↑</button>
+
+<div id="toast" class="fixed left-1/2 -translate-x-1/2 px-4 py-2 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-bold shadow-2xl transition duration-300 opacity-0 pointer-events-none z-50 max-w-[90vw] text-center" style="bottom: max(1.25rem, env(safe-area-inset-bottom) + 1rem);">Notification</div>
+
+<script>
+// ============================================================
+// MASTER DATA — 96 DIAGNOSTIC ALGORITHMS
+// ============================================================
+const ALGORITHMS = [
+{ id:"a1", category:"MANAGEMENT", system:"Cardiovascular", name:"Management of STEMI", alt:"ST-Elevation Myocardial Infarction", desc:"Reperfusion strategy based on PCI availability.", steps:[
+  { label:"Identify STEMI ECG findings", detail:"ST elevation in 2 contiguous leads, or new LBBB/RBBB.", type:"action" },
+  { label:"Code STEMI", detail:"Immediate cardiology consult.", type:"action" },
+  { label:"Assess PCI-capable facility distance", detail:"Decision point.", type:"decision" },
+  { label:"> 120 minutes away", detail:"Fibrinolysis strategy: check for absolute contraindications; if none, administer fibrinolytic therapy.", type:"no" },
+  { label:"< 120 minutes away", detail:"Primary PCI strategy: direct transfer to cath lab.", type:"yes" },
+  { label:"PLUS adjunctive therapy (fibrinolysis)", detail:"Aspirin + Clopidogrel + Anticoagulant (UFH, enoxaparin, or fondaparinux).", type:"action" },
+  { label:"PLUS adjunctive therapy (primary PCI)", detail:"Aspirin + ADP receptor inhibitor (prasugrel, ticagrelor, or clopidogrel) + Anticoagulant (UFH or bivalirudin) ± GP inhibitor.", type:"action" },
+  { label:"Secondary PCI", detail:"Direct transfer to PCI-capable facility (if fibrinolysis given).", type:"action" },
+  { label:"All patients — supportive therapy", detail:"Supplemental O₂ (target SpO₂ >90%) · Nitroglycerin for chest pain/HTN · Morphine for strong pain · High-intensity statin · Consider beta-blocker, ACE inhibitor.", type:"terminal" }
+]},
+{ id:"a2", category:"RESUSCITATION", system:"Cardiovascular", name:"Adult Advanced Cardiac Life Support (ACLS)", alt:"Cardiac Arrest Algorithm", desc:"ACLS protocol for shockable and non-shockable rhythms.", steps:[
+  { label:"Unresponsive adult", detail:"Abnormal or absent respirations, or no pulse.", type:"action" },
+  { label:"Start CPR", detail:"High-quality chest compressions (30:2, depth 5-6 cm, rate 100-120/min) · Bag-mask ventilation with 100% O₂ · Attach defibrillator.", type:"action" },
+  { label:"Analyze rhythm", detail:"Decision point.", type:"decision" },
+  { label:"Shockable rhythms", detail:"Ventricular fibrillation · Pulseless ventricular tachycardia.", type:"yes" },
+  { label:"Nonshockable rhythms", detail:"Asystole · Pulseless electrical activity.", type:"no" },
+  { label:"Shock as soon as possible", detail:"Initial dose: 120-200 J biphasic (360 J monophasic). Increase as needed.", type:"action" },
+  { label:"Epinephrine 1 mg IV/IO", detail:"Give as soon as possible. Repeat every 3-5 minutes.", type:"action" },
+  { label:"Resume CPR for 2 minutes", detail:"In parallel: consider advanced airway, obtain IV/IO access, treat reversible causes (Hs and Ts).", type:"action" },
+  { label:"Check for signs of ROSC", detail:"Palpable pulse · Measurable BP · Increase in EtCO₂.", type:"decision" },
+  { label:"Resuscitation drugs for shockable rhythms", detail:"After 2nd defibrillation: Epinephrine 1 mg IV/IO · After 3rd: Amiodarone 300 mg IV/IO OR Lidocaine 1-1.5 mg/kg IV/IO · After 4th: Epinephrine 1 mg IV/IO · After 5th: Amiodarone 150 mg IV/IO OR Lidocaine 0.5-0.75 mg/kg IV/IO.", type:"action" },
+  { label:"Postresuscitation care", detail:"Signs of ROSC → Postresuscitation care.", type:"terminal" },
+  { label:"Reversible causes (Hs and Ts)", detail:"Hypovolemia · Hypoxia · Hyperkalemia/hypokalemia · Hydrogen ions (acidosis) · Hypothermia · Tension pneumothorax · Tamponade (cardiac) · Toxins · Thrombosis (pulmonary) · Thrombosis (coronary).", type:"terminal" }
+]},
+{ id:"a3", category:"MANAGEMENT", system:"Cardiovascular", name:"Management of Bradycardia", alt:"Symptomatic Bradycardia", desc:"ACLS-based approach to symptomatic bradycardia.", steps:[
+  { label:"Symptomatic patient with HR < 50 bpm", detail:"Confirm bradycardia and symptoms.", type:"action" },
+  { label:"ABCDE survey and initial management", detail:"Transcutaneous pacer pads · IV access, pulse oximetry, cardiac monitoring · Identify underlying rhythm · 12-lead ECG.", type:"action" },
+  { label:"Signs of unstable bradycardia", detail:"Acute altered mental status · Chest pain, symptoms of acute heart failure · Hypotension.", type:"decision" },
+  { label:"Unstable", detail:"Proceed to atropine.", type:"no" },
+  { label:"Stable", detail:"Observation with continuous cardiac monitoring. Have ready: Atropine, Transcutaneous pacemaker.", type:"yes" },
+  { label:"1 mg IV atropine", detail:"Repeat every 3-5 minutes (max 3 mg).", type:"action" },
+  { label:"If NOT effective", detail:"Temporizing measures: Transcutaneous OR transvenous pacing · Dopamine OR epinephrine infusion.", type:"action" },
+  { label:"If effective", detail:"Observation.", type:"action" },
+  { label:"Identify and treat reversible causes", detail:"Hypoxia, ACS, electrolyte abnormalities, drug poisoning (beta blockers, CCBs).", type:"action" },
+  { label:"Obtain cardiology consult", detail:"For further testing (TTE) and to determine long-term management (PPM implantation).", type:"terminal" }
+]},
+{ id:"a4", category:"DIAGNOSIS", system:"Cardiovascular", name:"Acute Chest Pain — Life-Threatening Causes", alt:"Adult Chest Pain Algorithm", desc:"ABCDE assessment and differentiation of life-threatening chest pain.", steps:[
+  { label:"Acute chest pain in an adult patient", detail:"Initial assessment.", type:"action" },
+  { label:"ABCDE assessment", detail:"Airway, Breathing, Circulation, Disability, Exposure.", type:"action" },
+  { label:"12-lead ECG", detail:"Decision point.", type:"decision" },
+  { label:"ST elevations present → STEMI", detail:"Cardiology consult · Immediate revascularization · ASA + ADP receptor inhibitor · Anticoagulation, statin.", type:"yes" },
+  { label:"No ST elevations present", detail:"Obtain IV access · Monitor cardiac rhythm, BP, SpO₂ · Supplemental O₂ if hypoxemic.", type:"no" },
+  { label:"Focused history, physical exam, labs, CXR", detail:"Decision point.", type:"decision" },
+  { label:"No life-threatening causes identified", detail:"Consider alternate diagnoses.", type:"terminal" },
+  { label:"↑ Troponin + cardiac chest pain + CAD risk factors → NSTEMI", detail:"Cardiology consult and risk stratification (e.g., TIMI score) for timing of angiography · ASA + ADP receptor inhibitor · Anticoagulation, statin.", type:"yes" },
+  { label:"Normal troponin + cardiac chest pain at rest + CAD risk factors → Unstable angina", detail:"Cardiology consult and risk stratification · ASA + ADP receptor inhibitor · Anticoagulation, statin.", type:"yes" },
+  { label:"Mediastinal shift + absent lung markings → Tension pneumothorax", detail:"Needle decompression · Chest tube · Supplemental O₂.", type:"yes" },
+  { label:"Prominent cardiac silhouette + JVD + muffled heart sounds → Cardiac tamponade", detail:"Bedside TTE · Needle decompression · Cardiology consult.", type:"yes" },
+  { label:"Widened mediastinum + HTN → Aortic dissection", detail:"CTA chest · BP management · Cardiothoracic surgery consult.", type:"yes" },
+  { label:"Pneumomediastinum → Esophageal rupture", detail:"Esophagography · Broad-spectrum IV antibiotics · Surgery consult.", type:"yes" },
+  { label:"Hypoxemia + elevated D-dimer + Wells score > 3 → Pulmonary embolism", detail:"Anticoagulation · CTA chest.", type:"yes" }
+]},
+{ id:"a5", category:"MANAGEMENT", system:"Cardiovascular", name:"Newly Diagnosed Atrial Fibrillation", alt:"AFib Management", desc:"Acute and long-term management of atrial fibrillation.", steps:[
+  { label:"Newly diagnosed atrial fibrillation", detail:"Confirm diagnosis on ECG.", type:"action" },
+  { label:"Rapid ventricular response? (HR > 100-110/min)", detail:"Decision point.", type:"decision" },
+  { label:"No (AFib without RVR)", detail:"Consider cardiology consult · Identify and treat reversible causes · Consider indications for anticoagulation · Encourage lifestyle modifications.", type:"no" },
+  { label:"Yes (AFib with RVR)", detail:"Presence of hemodynamic instability, acute cardiac ischemia, acute heart failure, altered mental status.", type:"yes" },
+  { label:"Unstable", detail:"No pulse → PEA arrest: Activate code · Pulse present → Emergent synchronized cardioversion, urgent cardiology consult, ICU/CCU transfer, identify and treat underlying cause, continuous cardiac telemetry.", type:"no" },
+  { label:"Stable", detail:"< 48 h: IV rate or rhythm control · > 48 h: IV rate control · Consider cardiology consult · ICU/CCU consult & transfer if refractory RVR.", type:"yes" },
+  { label:"Resolution of RVR & still in AFib", detail:"Choice of rate vs rhythm control depends on duration of symptoms & individual comorbidities.", type:"action" },
+  { label:"Rate control", detail:"Target resting HR: < 110/min for asymptomatic normal LVEF · < 80/min for symptomatic. First line: BB, nondihydropyridine CCB · Second line: digoxin · Third line: amiodarone.", type:"action" },
+  { label:"Rhythm control", detail:"Assess need for anticoagulation prior to cardioversion. Pharmacologic: Dofetilide, ibutilide, flecainide, propafenone, amiodarone, sotalol, procainamide. Electrical: cardioversion. Interventional: catheter ablation, Maze procedure.", type:"action" },
+  { label:"Anticoagulation", detail:"Assess need for anticoagulation (CHA₂DS₂-VASc).", type:"action" }
+]},
+{ id:"a6", category:"MANAGEMENT", system:"Cardiovascular", name:"Carotid Artery Stenosis", alt:"Carotid Stenosis Management", desc:"Medical vs surgical management based on stenosis severity and symptoms.", steps:[
+  { label:"Suspected carotid stenosis", detail:"Initial evaluation.", type:"action" },
+  { label:"Carotid duplex ultrasound", detail:"Confirm stenosis.", type:"action" },
+  { label:"Stenosis detected (any degree)", detail:"Medical management to be continued long-term, beyond revascularization.", type:"action" },
+  { label:"Stenosis < 50%", detail:"Revascularization usually not indicated.", type:"no" },
+  { label:"Stenosis ≥ 50%", detail:"Assess symptoms.", type:"yes" },
+  { label:"Asymptomatic", detail:"Moderate (50-69%): Consider revascularization · Severe (70-99%): Consider revascularization.", type:"no" },
+  { label:"Symptomatic", detail:"Moderate (50-69%): Consider revascularization · Severe (70-99%): Revascularization is usually indicated.", type:"yes" }
+]},
+{ id:"a7", category:"MANAGEMENT", system:"Respiratory", name:"Initial Management of Acute Asthma Exacerbation", alt:"Asthma Exacerbation", desc:"Severity-based management of acute asthma.", steps:[
+  { label:"Suspected acute asthma exacerbation", detail:"Initial evaluation to determine severity based on worst feature.", type:"action" },
+  { label:"Mild or moderate", detail:"Speak in sentences, sits upright, not agitated, no accessory muscles · RR above baseline · HR 100-120 bpm · PEF > 50% · SpO₂ 90-95% on room air.", type:"yes" },
+  { label:"Severe", detail:"Speak in words, sits in tripod position, agitated, uses accessory muscles · RR > 30/min · HR > 120 bpm · PEF ≤ 50% · SpO₂ < 90% on room air.", type:"no" },
+  { label:"Life-threatening", detail:"Drowsiness, confusion, silent chest.", type:"decision" },
+  { label:"Initial treatment (mild/moderate)", detail:"Oxygen · Inhaled SABA · PO glucocorticoids · Consider inhaled SAMA.", type:"action" },
+  { label:"Maximize treatment (severe)", detail:"Oxygen · Nebulized SABA and SAMA · PO/IV glucocorticoids · Consider IV magnesium and ICS.", type:"action" },
+  { label:"Consult critical care and prepare for intubation (life-threatening)", detail:"Immediate ICU consult.", type:"action" },
+  { label:"Incomplete response", detail:"Escalate to severe treatment.", type:"action" },
+  { label:"Poor response", detail:"Escalate to life-threatening management.", type:"action" }
+]},
+{ id:"a8", category:"DIAGNOSIS", system:"Respiratory", name:"Diagnostic Approach to Pulmonary Embolism", alt:"PE Diagnostic Algorithm", desc:"Stratifying by hemodynamic stability and pretest probability.", steps:[
+  { label:"Suspected pulmonary embolism", detail:"Initial assessment.", type:"action" },
+  { label:"Hemodynamically unstable?", detail:"Decision point.", type:"decision" },
+  { label:"Stable", detail:"Estimate pretest probability (PTP) using Wells score or revised Geneva score.", type:"yes" },
+  { label:"Unstable", detail:"Stabilize the patient. If stable enough for imaging → Imaging. If remains unstable → Bedside echocardiography.", type:"no" },
+  { label:"Low PTP", detail:"Consider additional risk stratification (e.g., PERC rule). If PTP remains low → PE unlikely. If high PTP → D-dimer.", type:"no" },
+  { label:"Intermediate PTP", detail:"Consider empiric anticoagulation based on bleeding risk. D-dimer: if high → Imaging.", type:"decision" },
+  { label:"High PTP", detail:"Go directly to Imaging (CTPA or V/Q scan).", type:"yes" },
+  { label:"D-dimer", detail:"Normal → PE unlikely. High → Imaging.", type:"action" },
+  { label:"Imaging (CTPA or V/Q scan)", detail:"Negative → PE unlikely. Positive → Treat as pulmonary embolism.", type:"action" },
+  { label:"Bedside echocardiography", detail:"RV dysfunction → Treat as PE. No RV dysfunction → PE unlikely, consider alternative diagnoses.", type:"action" }
+]},
+{ id:"a9", category:"DIAGNOSIS", system:"Respiratory", name:"Pulmonary Function Testing (PFTs) Interpretation", alt:"PFT Interpretation Algorithm", desc:"Spirometry-based differentiation of restrictive vs obstructive lung disease.", steps:[
+  { label:"Pulmonary function testing (PFTs) interpretation", detail:"Spirometry, TLC, DLCO, bronchodilator challenge.", type:"action" },
+  { label:"FEV₁/FVC ≥ 0.7?", detail:"Decision point.", type:"decision" },
+  { label:"Yes → Restrictive lung disease", detail:"Check FVC.", type:"yes" },
+  { label:"No → Obstructive lung disease", detail:"Check FVC.", type:"no" },
+  { label:"FVC ≥ 80% predicted?", detail:"Decision point.", type:"decision" },
+  { label:"Yes → Measure DLCO", detail:"↑: Polycythemia, pulmonary hemorrhage, L→R shunt, pregnancy. Normal: Healthy. ↓: Anemia, pulmonary edema, PAH, chronic VTE.", type:"yes" },
+  { label:"No → TLC ≥ 80% predicted?", detail:"Decision point.", type:"no" },
+  { label:"No → Restrictive lung disease", detail:"Measure DLCO. ≥ 75%: Chest wall or neuromuscular disorders. < 75%: Interstitial lung disease.", type:"no" },
+  { label:"Yes → Mixed lung disease", detail:"Measure DLCO.", type:"yes" },
+  { label:"Obstructive lung disease", detail:"Check TLC ≥ 80% predicted?", type:"action" },
+  { label:"Yes → Obstructive lung disease", detail:"Measure DLCO. < 75%: Emphysematous COPD. ≥ 75%: Bronchodilator challenge test.", type:"yes" },
+  { label:"No → Mixed lung disease", detail:"Measure DLCO.", type:"no" }
+]},
+{ id:"a10", category:"DIAGNOSIS", system:"Respiratory", name:"Dyspnea — Differential Diagnosis", alt:"Dyspnea Algorithm", desc:"Cardiac, respiratory, and non-cardiorespiratory causes of dyspnea.", steps:[
+  { label:"Dyspnea", detail:"Initial assessment.", type:"action" },
+  { label:"Cardiac vs Respiratory vs Non-cardiorespiratory", detail:"Decision point.", type:"decision" },
+  { label:"Cardiac", detail:"Normal CXR → Acute: ACS, myocardial contusion, arrhythmias, myocarditis, acute pericarditis. Chronic: Arrhythmias, HOCM, restrictive CM, valvular heart disease. Abnormal CXR → Acute: Acute decompensated HF, CHF, pericardial effusion/cardiac tamponade. Chronic: Pericardial effusion, constrictive pericarditis, dilated cardiomyopathy.", type:"yes" },
+  { label:"Respiratory", detail:"Obstructive airway disease · Lung parenchyma & pulmonary vessel disease · Disease of chest wall & pleural cavity.", type:"no" },
+  { label:"Non-cardiorespiratory", detail:"CNS/neuromuscular · Toxic/metabolic · Others (psychogenic, AKI, ascites, large hiatal hernia, chronic aspiration, hepatopulmonary syndrome).", type:"decision" }
+]},
+{ id:"a11", category:"DIAGNOSIS", system:"Respiratory", name:"Hypoxemia — Diagnostic Approach", alt:"Hypoxemia Algorithm", desc:"A-a gradient based differentiation of hypoxemia causes.", steps:[
+  { label:"Hypoxemia (PaO₂ < 75-80 mm Hg)", detail:"Type 1 respiratory failure: PaO₂ < 60 mm Hg.", type:"action" },
+  { label:"Obtain ABG & calculate A-a gradient", detail:"Decision point.", type:"decision" },
+  { label:"< Age/4 + 4 → Normal A-a gradient", detail:"Check PaCO₂.", type:"yes" },
+  { label:"> Age/4 + 4 → ↑ A-a gradient", detail:"Check PaCO₂.", type:"no" },
+  { label:"PaCO₂ ≤ 45 → ↓ FiO₂", detail:"e.g., high altitude.", type:"yes" },
+  { label:"PaCO₂ > 45 → Hypoventilation", detail:"Type 2 RF: PaCO₂ > 50 mm Hg.", type:"no" },
+  { label:"↓ Maximal inspiratory pressure (MIP)", detail:"Neuromuscular disease (GBS, MG, ALS) · ↓ Chest wall compliance (flail chest, kyphoscoliosis).", type:"no" },
+  { label:"Normal MIP", detail:"CNS depression (opioids, toxic metabolic encephalopathy, OHS, central sleep apnea).", type:"yes" },
+  { label:"PaCO₂ < 45 with ↑ A-a gradient", detail:"PaO₂ corrects easily with 100% O₂?", type:"decision" },
+  { label:"No → Extreme right-to-left shunt (V/Q=0)", detail:"Cardiac: Eisenmenger, cyanotic heart disease · Vascular: pulmonary AVM · Alveolar: severe pneumonia, complete atelectasis, severe pulmonary edema, severe ARDS.", type:"no" },
+  { label:"Yes → V/Q mismatch (most common)", detail:"or ↓ diffusion capacity (less common).", type:"yes" },
+  { label:"PaCO₂ > 45 with ↑ A-a gradient", detail:"Type 2 RF: PaCO₂ > 50 mm Hg.", type:"decision" }
+]},
+{ id:"a12", category:"DIAGNOSIS", system:"Nephrology", name:"Diagnostic Approach to Hematuria", alt:"Hematuria Algorithm", desc:"From suspected hematuria to glomerular vs non-glomerular causes.", steps:[
+  { label:"Suspected hematuria", detail:"Initial assessment.", type:"action" },
+  { label:"History and/or signs of transient cause?", detail:"Trauma, urological procedure, UTI, nephrolithiasis, menstruation.", type:"decision" },
+  { label:"Yes → Management of transient cause", detail:"Consult specialists as needed · Treat underlying cause · Consider repeat UA after treatment.", type:"yes" },
+  { label:"No → Initial studies for all patients", detail:"CBC, BMP, urine dipstick, urinalysis, urine culture, spot urine protein:creatinine, urine microscopy, urine β-hCG.", type:"no" },
+  { label:"RBCs on dipstick?", detail:"Decision point.", type:"decision" },
+  { label:"No → Assess for mimics of hematuria", detail:"Hemoglobinuria, myoglobinuria.", type:"no" },
+  { label:"Yes → Visible discoloration?", detail:"Decision point.", type:"yes" },
+  { label:"Yes → Macroscopic hematuria", detail:"Consult urology for evaluation and management (e.g., bladder drainage).", type:"yes" },
+  { label:"No → Urine microscopy", detail:"Decision point.", type:"no" },
+  { label:"< 3 RBCs per HPF", detail:"Repeat UA 3x at 6-week intervals.", type:"no" },
+  { label:"≥ 3 RBCs per HPF → Microscopic hematuria", detail:"Differentiate glomerular vs non-glomerular.", type:"yes" },
+  { label:"Dysmorphic RBCs, RBC casts, and/or proteinuria → Glomerular hematuria", detail:"Consult nephrology.", type:"yes" },
+  { label:"Normal RBCs → Nonglomerular hematuria", detail:"Assess malignancy risk.", type:"no" },
+  { label:"Assess malignancy risk", detail:"Low → Repeat UA. Intermediate → Renal US and cystoscopy. High → CT urography and cystoscopy.", type:"decision" }
+]},
+{ id:"a13", category:"DIAGNOSIS", system:"Nephrology", name:"Diagnosis of Hypernatremia", alt:"Hypernatremia Algorithm", desc:"Volume status and urine osmolality based diagnosis.", steps:[
+  { label:"Serum sodium > 145 mEq/L", detail:"Confirm hypernatremia.", type:"action" },
+  { label:"Clinical evaluation to determine etiology", detail:"Decision point.", type:"decision" },
+  { label:"Etiology clear: Diagnostic studies may not be needed", detail:"Treat underlying cause.", type:"yes" },
+  { label:"Features of Cushing syndrome or primary hyperaldosteronism", detail:"Treat underlying cause.", type:"no" },
+  { label:"Etiology unclear → Check urine osmolality", detail:"Decision point.", type:"decision" },
+  { label:"> 600 mOsmol/kg → Implies extrarenal mechanism", detail:"Assess volume status.", type:"yes" },
+  { label:"≤ 600 mOsmol/kg → Implies renal mechanism", detail:"Assess volume status.", type:"no" },
+  { label:"Hypovolemic (extrarenal)", detail:"GI or skin loss.", type:"no" },
+  { label:"Euvolemic (extrarenal)", detail:"Impaired thirst or lack of access to water.", type:"yes" },
+  { label:"Hypervolemic (extrarenal)", detail:"Iatrogenic or ingestion.", type:"decision" },
+  { label:"Hypovolemic (renal)", detail:"Diuretics or osmotic diuresis.", type:"no" },
+  { label:"Euvolemic (renal)", detail:"Arginine vasopressin disorders.", type:"yes" },
+  { label:"Hypervolemic (renal)", detail:"Either: Primary hyperaldosteronism · Cushing syndrome.", type:"decision" }
+]},
+{ id:"a14", category:"DIAGNOSIS", system:"Nephrology", name:"Diagnosis of Hyponatremia", alt:"Hyponatremia Algorithm", desc:"Serum osmolality and volume status based diagnosis.", steps:[
+  { label:"Serum sodium < 135 mEq/L", detail:"Confirm hyponatremia.", type:"action" },
+  { label:"Determine serum osmolality", detail:"Decision point.", type:"decision" },
+  { label:"< 280 mOsm/kg → Hypotonic", detail:"Identify and treat underlying cause. Assess volume status.", type:"yes" },
+  { label:"280-295 mOsm/kg → Isotonic", detail:"TURP syndrome · Pseudohyponatremia. Identify and treat underlying cause.", type:"no" },
+  { label:"> 295 mOsm/kg → Hypertonic", detail:"Hyperglycemia · IV mannitol · IV radiocontrast. Identify and treat underlying cause.", type:"decision" },
+  { label:"Hypovolemic", detail:"Uosm > 100 → ↓ UNa and/or ↓ FENa → Extrarenal: Diarrhea, vomiting, third spacing. ↑ UNa and/or ↑ FENa → Renal: Diuretic use, salt wasting, mineralocorticoid deficiency.", type:"no" },
+  { label:"Euvolemic", detail:"Uosm ≤ 100 → ↓ UNa and/or ↓ FENa → Extrarenal: Primary polydipsia, beer potomania. Uosm > 100 → ↑ UNa and/or ↑ FENa → Renal: SIADH, hypocortisolism, hypothyroidism, reset osmostat.", type:"yes" },
+  { label:"Hypervolemic", detail:"Uosm > 100 → ↓ UNa and/or ↑ FENa → Extrarenal: CHF, liver cirrhosis, hypoalbuminemia. ↑ UNa and/or ↑ FENa → Renal: Renal failure.", type:"decision" }
+]},
+{ id:"a15", category:"MANAGEMENT", system:"Nephrology", name:"Management of Hyponatremia", alt:"Hyponatremia Management", desc:"Severity-based management of hyponatremia.", steps:[
+  { label:"Serum sodium < 135 mEq/L", detail:"Confirm hyponatremia.", type:"action" },
+  { label:"Initial evaluation", detail:"Repeat BMP · Check serum glucose; calculate corrected sodium for hyperglycemia if applicable.", type:"action" },
+  { label:"Confirmed hyponatremia", detail:"Decision point.", type:"decision" },
+  { label:"Presence of any of the following?", detail:"Severe or moderately severe symptoms · Known or suspected intracranial pathology or elevated ICP · Acute hyponatremia (< 48 hours) with sodium decrease of > 10 mEq/L.", type:"decision" },
+  { label:"Yes → Rapid correction", detail:"3% IV NaCl · Specialist consult · Monitor closely for signs of overcorrection.", type:"yes" },
+  { label:"No → Determine serum osmolality", detail:"Decision point.", type:"no" },
+  { label:"< 280 mOsm/kg → Hypotonic", detail:"Assess volume status and renal vs extrarenal cause.", type:"yes" },
+  { label:"280-295 mOsm/kg → Isotonic", detail:"Fluid restriction.", type:"no" },
+  { label:"> 295 mOsm/kg → Hypertonic", detail:"Identify and treat underlying cause.", type:"decision" },
+  { label:"Hypovolemic (hypotonic)", detail:"Slow correction: IV isotonic saline · Monitor closely for signs of overcorrection.", type:"no" },
+  { label:"Euvolemic (hypotonic)", detail:"Fluid restriction.", type:"yes" },
+  { label:"Hypervolemic (hypotonic)", detail:"Fluid restriction +/- diuretics.", type:"decision" }
+]},
+{ id:"a16", category:"MANAGEMENT", system:"Nephrology", name:"Management of Hyperkalemia", alt:"Hyperkalemia Algorithm", desc:"Differentiating urgent from emergent treatment.", steps:[
+  { label:"Hyperkalemia (K⁺ > 5.5 mEq/L)", detail:"Repeat K⁺ to exclude pseudohyperkalemia.", type:"action" },
+  { label:"Obtain ECG and lab studies", detail:"BMP, blood gas, liver chemistries. Determine hyperK⁺ severity.", type:"action" },
+  { label:"Evaluate for hyperkalemic emergency", detail:"≥ 1 of: Muscle weakness, paralysis · ECG changes · K⁺ > 6.0-6.5 mEq/L · Impaired K⁺ metabolism.", type:"decision" },
+  { label:"No → Less urgent hyperkalemia", detail:"Identify and treat the cause (most common: renal impairment).", type:"no" },
+  { label:"Yes → Hyperkalemic emergency", detail:"Treat and initiate continuous cardiac monitoring immediately.", type:"yes" },
+  { label:"Cardiac membrane stabilization", detail:"If ECG changes: give calcium gluconate or calcium chloride.", type:"action" },
+  { label:"Intracellular K⁺ shifting", detail:"Insulin with dextrose, consider adding SABA.", type:"action" },
+  { label:"Serial ECG and repeat potassium", detail:"Monitor for hypoglycemia.", type:"action" },
+  { label:"Repeat treatments if persistent hyperkalemia", detail:"Consider nephrology and critical care consults; hemodialysis for refractory hyperkalemia.", type:"action" },
+  { label:"K⁺ excess", detail:"Kidney disease, hypocortisolism, hypoaldosteronism, drugs (ACEi), ↑ dietary K⁺ intake, type IV RTA.", type:"terminal" },
+  { label:"↑ Extracellular K⁺ shift", detail:"Insulin deficiency, acidosis, DKA, drugs (beta blockers, digoxin, succinylcholine), hyperosmolality.", type:"terminal" },
+  { label:"↑ Extracellular K⁺ release", detail:"Hemolysis, tumor lysis syndrome, rhabdomyolysis, pseudohyperkalemia (delayed sample).", type:"terminal" }
+]},
+{ id:"a17", category:"MANAGEMENT", system:"Nephrology", name:"Management of Hypokalemia", alt:"Hypokalemia Algorithm", desc:"Severity-based management of hypokalemia.", steps:[
+  { label:"Serum potassium < 3.5 mEq/L", detail:"Confirm hypokalemia.", type:"action" },
+  { label:"Initial evaluation", detail:"BMP including calcium · Serum magnesium, phosphate · ABG or VBG · ECG · Consider measuring urinary potassium.", type:"action" },
+  { label:"Symptomatic hypokalemia?", detail:"Decision point.", type:"decision" },
+  { label:"Yes → IV potassium chloride PLUS oral repletion if tolerated", detail:"Continuous cardiac monitoring · Repeat serum potassium every 2-4 hours · Consider ICU admission.", type:"yes" },
+  { label:"No → Assess severity", detail:"Decision point.", type:"no" },
+  { label:"Mild (3.0-3.4 mEq/L)", detail:"Consider oral potassium chloride supplementation.", type:"no" },
+  { label:"Moderate (2.5-2.9 mEq/L)", detail:"Oral potassium chloride repletion.", type:"yes" },
+  { label:"Severe (< 2.5 mEq/L) and/or high risk of recurrent severe hypokalemia", detail:"IV potassium chloride PLUS oral repletion if tolerated.", type:"decision" },
+  { label:"Further management", detail:"Assess and treat underlying cause · Specialist consult as needed · Correct cautiously in impaired renal function.", type:"terminal" }
+]},
+{ id:"a18", category:"DIAGNOSIS", system:"Nephrology", name:"Diagnosis of Hypocalcemia", alt:"Hypocalcemia Algorithm", desc:"PTH-based differentiation of hypocalcemia causes.", steps:[
+  { label:"Serum calcium < 8.5 mg/dL", detail:"Confirm hypocalcemia.", type:"action" },
+  { label:"Either: Order ionized Ca²⁺ or Calculate Ca²⁺ corrected for albumin", detail:"Decision point.", type:"decision" },
+  { label:"Normal Ca²⁺ → Factitious hypocalcemia", detail:"No treatment needed.", type:"no" },
+  { label:"↓ Ca²⁺ → Confirmed hypocalcemia", detail:"Discontinue any medications that can cause hypocalcemia.", type:"yes" },
+  { label:"Measure PTH", detail:"Decision point.", type:"decision" },
+  { label:"Normal or ↓ PTH → Hypoparathyroidism", detail:"Treat with calcium and vitamin D.", type:"no" },
+  { label:"↑ PTH → Measure phosphate, magnesium, calcidiol, and creatinine", detail:"Decision point.", type:"yes" },
+  { label:"↓ Or normal phosphate + ↓ Calcidiol → Vitamin D deficiency", detail:"Treat with vitamin D.", type:"no" },
+  { label:"↑ Phosphate + ↑ Creatinine → Chronic kidney disease", detail:"Treat CKD.", type:"yes" },
+  { label:"↑ Phosphate → Pseudohypoparathyroidism", detail:"Treat with calcium and vitamin D.", type:"decision" },
+  { label:"↓ Magnesium → Either: Malabsorption · Alcohol use disorder", detail:"Correct magnesium.", type:"terminal" }
+]},
+{ id:"a19", category:"DIAGNOSIS", system:"Nephrology", name:"Diagnosis of Hypercalcemia", alt:"Hypercalcemia Algorithm", desc:"PTH and PTHrP based differentiation of hypercalcemia.", steps:[
+  { label:"↑ Serum calcium (incidental finding or suspected hypercalcemia)", detail:"Confirm hypercalcemia.", type:"action" },
+  { label:"Order ionized Ca²⁺ or calculate Ca²⁺ corrected for serum albumin", detail:"Decision point.", type:"decision" },
+  { label:"Normal Ca²⁺ → Remeasure after discontinuing interfering medications", detail:"Repeat testing.", type:"no" },
+  { label:"↑ Ca²⁺ → Confirmed hypercalcemia", detail:"Check PTH.", type:"yes" },
+  { label:"↑ PTH (+ ↓ Phosphate) → Primary hyperparathyroidism", detail:"Parathyroidectomy if indicated.", type:"yes" },
+  { label:"↔/↑ PTH → Urine Ca²⁺", detail:"Decision point.", type:"decision" },
+  { label:"↔/↑ Ca²⁺ → Familial hypocalciuric hypercalcemia", detail:"Usually no treatment needed.", type:"yes" },
+  { label:"↓ Ca²⁺ → Hypercalcemia of malignancy", detail:"Treat underlying malignancy.", type:"no" },
+  { label:"↓ PTH → PTHrP, Calcidiol and Calcitriol", detail:"Decision point.", type:"no" },
+  { label:"↑ PTHrP → Hypercalcemia of malignancy", detail:"Treat underlying malignancy.", type:"yes" },
+  { label:"↑ Calcitriol → Granulomatous diseases or lymphoma", detail:"Treat underlying disease.", type:"decision" },
+  { label:"↑ Calcidiol → Vitamin D intoxication", detail:"Stop vitamin D.", type:"terminal" },
+  { label:"Vit. D metabolites, ↔ PTHrP → Consider other causes", detail:"Further workup.", type:"terminal" }
+]},
+{ id:"a20", category:"DIAGNOSIS", system:"Endocrine", name:"Suspected Arginine Vasopressin Disorder", alt:"Diabetes Insipidus Algorithm", desc:"Water deprivation test and copeptin-based diagnosis.", steps:[
+  { label:"Suspected AVP disorder", detail:"Initial evaluation.", type:"action" },
+  { label:"Initial evaluation", detail:"Plasma osmolality (POsm), BMP · Urinalysis · 24-hour urine collection: volume and urine osmolality (UOsm).", type:"action" },
+  { label:"High serum Na⁺ and/or POsm + Low UOsm → AVP disorder likely", detail:"Proceed to water deprivation test or plasma copeptin testing.", type:"yes" },
+  { label:"Normal serum Na⁺ and POsm + Low UOsm → Diagnosis unclear", detail:"Proceed to water deprivation test or plasma copeptin testing.", type:"no" },
+  { label:"Low serum Na⁺ and/or POsm + Very low UOsm → Primary polydipsia likely", detail:"Proceed to water deprivation test or plasma copeptin testing.", type:"decision" },
+  { label:"Water deprivation test", detail:"POsm increases further, UOsm remains low.", type:"action" },
+  { label:"UOsm < 300 → Administer desmopressin", detail:"No or minimal ↑ UOsm → AVP resistance. Significant ↑ UOsm → Complete AVP deficiency.", type:"no" },
+  { label:"UOsm 300-800 → Administer desmopressin", detail:"Significant ↑ UOsm → Partial AVP deficiency. No or minimal ↑ UOsm → Primary polydipsia.", type:"yes" },
+  { label:"Plasma copeptin testing", detail:"POsm and UOsm increase to normal level → Primary polydipsia.", type:"action" }
+]},
+{ id:"a21", category:"DIAGNOSIS", system:"Endocrine", name:"Evaluation of Hyperthyroidism", alt:"Hyperthyroidism Algorithm", desc:"TSH, free T4, and T3 based diagnosis of hyperthyroidism.", steps:[
+  { label:"Hyperthyroidism suspected", detail:"Measure TSH, free T4, and total T3 levels.", type:"action" },
+  { label:"↑ Or normal TSH + ↑ Free T4 + ↑ Total T3", detail:"Thyrotropic adenoma likely. MRI pituitary gland.", type:"yes" },
+  { label:"↓ TSH + ↑ Free T4 + ↑ Total T3", detail:"Overt hyperthyroidism.", type:"no" },
+  { label:"↓ TSH + Normal free T4 + Normal total T3", detail:"Measure β-hCG. Negative → Subclinical hyperthyroidism. Positive → Consider β-hCG-associated hyperthyroidism.", type:"decision" },
+  { label:"Normal TSH + Normal free T4 + Normal total T3", detail:"Hyperthyroidism unlikely.", type:"terminal" },
+  { label:"Diagnostic criteria met for Graves disease?", detail:"Decision point.", type:"decision" },
+  { label:"Yes → High suspicion for Graves?", detail:"Check TRAb. Positive → Graves disease. Negative → Thyroid imaging.", type:"yes" },
+  { label:"No → Thyroid imaging", detail:"Nuclear medicine thyroid scan · Radioactive iodine uptake · If unavailable, consider ultrasound with Doppler.", type:"no" },
+  { label:"High uptake", detail:"Diffuse pattern → Graves. Nodular: One or two areas → Toxic adenoma. Multiple areas → Toxic multinodular goiter.", type:"yes" },
+  { label:"Low uptake", detail:"Check anti-TPOAb and/or anti-TGAb. Positive → Hashitoxicosis. Negative → Measure thyroglobulin. High or normal → Endogenous hyperthyroidism. Low → Exogenous hyperthyroidism.", type:"no" }
+]},
+{ id:"a22", category:"DIAGNOSIS", system:"Endocrine", name:"Diagnosis of Hypothyroidism", alt:"Hypothyroidism Algorithm", desc:"TSH and free T4 based diagnosis of hypothyroidism.", steps:[
+  { label:"Suspected hypothyroidism", detail:"Measure TSH.", type:"action" },
+  { label:"Low TSH", detail:"Secondary or tertiary hypothyroidism likely. Measure FT4. Low → Secondary or tertiary hypothyroidism. Normal or high → Hyperthyroidism.", type:"no" },
+  { label:"Normal TSH", detail:"Hypothyroidism unlikely.", type:"yes" },
+  { label:"High TSH", detail:"Primary hypothyroidism likely. Measure FT4. Low → Primary hypothyroidism. Normal → Subclinical hypothyroidism.", type:"decision" }
+]},
+{ id:"a23", category:"DIAGNOSIS", system:"Endocrine", name:"Evaluation of Thyroid Nodule", alt:"Thyroid Nodule Algorithm", desc:"TSH, scintigraphy, and FNA-based evaluation.", steps:[
+  { label:"Thyroid nodule", detail:"Initial evaluation: History and physical examination · TSH · Ultrasound of the neck.", type:"action" },
+  { label:"TSH low", detail:"Thyroid scintigraphy. Hot nodule → Evaluate for hyperthyroidism. Cold nodule → Indications for fine needle aspiration?", type:"no" },
+  { label:"TSH normal or elevated", detail:"Indications for fine needle aspiration?", type:"yes" },
+  { label:"Indications for FNA?", detail:"Yes → Fine needle aspiration → Cytology. No → Monitor with thyroid ultrasound.", type:"decision" }
+]},
+{ id:"a24", category:"DIAGNOSIS", system:"Endocrine", name:"Clinical Features of Acromegaly", alt:"Acromegaly Algorithm", desc:"IGF-1 and OGTT-based diagnosis.", steps:[
+  { label:"Clinical features of acromegaly", detail:"Initial assessment.", type:"action" },
+  { label:"Serum IGF-1 analysis", detail:"Decision point.", type:"decision" },
+  { label:"Normal → Acromegaly excluded", detail:"No further workup.", type:"no" },
+  { label:"Elevated → OGTT and GH measurements", detail:"Decision point.", type:"yes" },
+  { label:"GH suppressed 2 hours after OGTT?", detail:"Yes → Acromegaly excluded. No → Acromegaly confirmed.", type:"decision" },
+  { label:"Acromegaly confirmed → Pituitary MRI", detail:"Visible mass → GH-secreting pituitary adenoma confirmed. Normal → Screen for extrapituitary cause.", type:"terminal" }
+]},
+{ id:"a25", category:"DIAGNOSIS", system:"Endocrine", name:"Suspected Adrenal Insufficiency (AI)", alt:"Adrenal Insufficiency Algorithm", desc:"Cortisol and ACTH-based diagnosis of adrenal insufficiency.", steps:[
+  { label:"Suspected adrenal insufficiency (AI)", detail:"Fatigue, weakness, hyperpigmentation, salt and/or sugar craving.", type:"action" },
+  { label:"Signs of adrenal crisis?", detail:"Refractory hypotension, impaired consciousness, severe abdominal pain, vomiting.", type:"decision" },
+  { label:"Yes → Start empiric management", detail:"Hydrocortisone 100 mg IV · Fluid resuscitation · Treat hypoglycemia · Defer testing until stable.", type:"yes" },
+  { label:"No → Measure morning cortisol", detail:"Decision point.", type:"no" },
+  { label:"Low cortisol → Obtain morning ACTH and perform ACTH stimulation test", detail:"Measure cortisol rise.", type:"no" },
+  { label:"High cortisol (e.g., ≥ 18 mcg/dL) → Consider alternative diagnoses", detail:"Rule out other causes.", type:"yes" },
+  { label:"↑ ACTH → Primary AI", detail:"High morning ACTH PLUS no rise after stimulation. Level of defect: adrenal glands. Screen for hypoaldosteronism and hypoandrogenism. Measure 21-hydroxylase antibodies. Negative → Consider other causes. Positive → Autoimmune AI: screen for autoimmune polyendocrine syndrome.", type:"yes" },
+  { label:"↓ ACTH → Secondary or tertiary AI", detail:"Low morning ACTH PLUS significant rise after stimulation. Level of defect: pituitary (secondary) or hypothalamus (tertiary). MRI pituitary. Lesion detected → Treat. No lesion → Consider other causes.", type:"no" }
+]},
+{ id:"a26", category:"DIAGNOSIS", system:"Endocrine", name:"Suspected Hyperaldosteronism", alt:"Hyperaldosteronism Algorithm", desc:"PAC, PRA, and confirmatory testing.", steps:[
+  { label:"Suspected hyperaldosteronism (HTN + hypokalemia)", detail:"Initial assessment.", type:"action" },
+  { label:"Measure plasma aldosterone (PAC) + renin activity (PRA)", detail:"Decision point.", type:"decision" },
+  { label:"↑ PAC and ↑ PRA → Secondary hyperaldosteronism", detail:"Renal artery stenosis, renin-secreting tumor, CKD. Diagnostics and treatment for underlying cause.", type:"yes" },
+  { label:"↑ PAC + ↓ PRA + PAC/PRA ratio > 20 → Confirmatory test", detail:"Oral sodium loading test, saline infusion test → Primary hyperaldosteronism.", type:"no" },
+  { label:"↓ PAC and ↓ PRA → Pseudo-hyperaldosteronism", detail:"CAH, exogenous mineralocorticoid, Cushing's. Treat underlying cause.", type:"decision" },
+  { label:"Primary hyperaldosteronism → Identify subtype", detail:"Adrenal CT. Malignancy? No → Adrenal venous sampling. Bilateral → Aldosterone receptor antagonists. Unilateral → Surgery (adrenalectomy). Yes → Consider surgery.", type:"terminal" }
+]},
+{ id:"a27", category:"DIAGNOSIS", system:"Endocrine", name:"Diabetes Mellitus Screening", alt:"DM Screening Algorithm", desc:"Risk-based screening for diabetes mellitus.", steps:[
+  { label:"Diabetes mellitus screening", detail:"Initial assessment.", type:"action" },
+  { label:"Signs or symptoms of hyperglycemia?", detail:"Decision point.", type:"decision" },
+  { label:"No → Patient ≥ 35 years old?", detail:"Decision point.", type:"no" },
+  { label:"No → Patient obese + 1 or more risk factors?", detail:"Decision point.", type:"no" },
+  { label:"No → No testing", detail:"No screening needed.", type:"no" },
+  { label:"Yes → HbA1C or FPG or OGTT 2-hour plasma glucose", detail:"Decision point.", type:"yes" },
+  { label:"A1C ≥ 6.5% or FPG ≥ 126 or OGTT ≥ 200", detail:"Repeat test to confirm → Diabetes mellitus.", type:"yes" },
+  { label:"A1C 5.7-6.4% or FPG 100-125 or OGTT 140-199", detail:"Repeat test to confirm → Prediabetes.", type:"no" },
+  { label:"A1C < 5.7% or FPG < 100 or OGTT < 140", detail:"Repeat test to confirm → Healthy.", type:"decision" },
+  { label:"Yes → Single random plasma glucose", detail:"≥ 200 mg/dL → Diabetes mellitus.", type:"yes" }
+]},
+{ id:"a28", category:"MANAGEMENT", system:"Gastroenterology", name:"Management of Acute Upper GI Bleeding (UGIB)", alt:"UGIB Algorithm", desc:"Hemodynamic stability-based management of upper GI bleeding.", steps:[
+  { label:"Features suggesting acute UGIB", detail:"Hematemesis, melena.", type:"action" },
+  { label:"Hemodynamically unstable?", detail:"Decision point.", type:"decision" },
+  { label:"Yes → Stabilization", detail:"Urgent specialist consult, large-bore IV access, NPO · Consider: Intubation, IV fluid resuscitation, Blood products, Anticoagulant reversal.", type:"yes" },
+  { label:"No → Empiric pharmacological treatment", detail:"Consider erythromycin · Suspected variceal bleeding: Octreotide or vasopressin PLUS ceftriaxone.", type:"no" },
+  { label:"Emergency EGD (unstable)", detail:"Concurrent empiric pharmacological treatment if it does not delay EGD.", type:"action" },
+  { label:"Nonemergency EGD (stable)", detail:"Bleeding source identified → Hemostasis. Bleeding source not identified → Melena? Yes → Colonoscopy. No → Mesenteric angiography.", type:"action" },
+  { label:"Bleeding source identified (emergency EGD)", detail:"Hemostasis.", type:"yes" },
+  { label:"Contraindicated or bleeding source not identified", detail:"Mesenteric angiography. Source identified → Hemostasis. Source not identified → Evaluation for small bowel bleeding.", type:"no" }
+]},
+{ id:"a29", category:"MANAGEMENT", system:"Gastroenterology", name:"Management of Acute Lower GI Bleeding (LGIB)", alt:"LGIB Algorithm", desc:"Hemodynamic stability-based management of lower GI bleeding.", steps:[
+  { label:"Features suggesting acute LGIB", detail:"Hematochezia.", type:"action" },
+  { label:"Hemodynamically unstable?", detail:"Decision point.", type:"decision" },
+  { label:"Yes → Stabilization", detail:"Urgent specialist consult, large-bore IV access, NPO · Consider: IV fluid resuscitation, Blood products, Anticoagulant reversal.", type:"yes" },
+  { label:"No → Both: Tolerating bowel preparation and Low suspicion of active bleeding?", detail:"Nonemergency colonoscopy with bowel preparation.", type:"no" },
+  { label:"CT angiography", detail:"Bleeding source identified → If not previously done: colonoscopy. Source not identified → Hemostasis. Source not identified → Consider other diagnoses.", type:"action" }
+]},
+{ id:"a30", category:"DIAGNOSIS", system:"Gastroenterology", name:"Differential Diagnosis of Jaundice", alt:"Jaundice Algorithm", desc:"Bilirubin and LFT-based differentiation of jaundice.", steps:[
+  { label:"Jaundice", detail:"Measure bilirubin.", type:"action" },
+  { label:"↑ Indirect bilirubin → Unconjugated hyperbilirubinemia", detail:"Increased hemoglobin breakdown (hemolysis, impaired erythropoiesis, resolving hematoma, internal hemorrhage) · Impaired hepatic uptake (drugs, portosystemic shunt) · Impaired conjugation (Gilbert, Crigler-Najjar, neonatal jaundice).", type:"yes" },
+  { label:"↑ Direct bilirubin → Conjugated hyperbilirubinemia", detail:"Liver function tests. ↑ AST and ALT → Hepatocellular injury. ↑ ALP and γ-GT → Cholestasis. All normal → ↓ Excretion or reuptake of bilirubin.", type:"no" },
+  { label:"Hepatocellular injury", detail:"ALT > AST: Hepatitis A/B/C, drug/toxins, autoimmune hepatitis. AST > ALT: Alcohol-associated liver disease, acute liver failure, decompensated cirrhosis, HCC.", type:"action" },
+  { label:"Cholestasis", detail:"Imaging for bile duct evaluation. Normal bile duct → Intrahepatic cholestasis: Liver disease, PBC, drugs/toxins, sepsis, postoperative, pregnancy. Dilated bile duct → Biliary obstruction: Choledocholithiasis, tumors, PSC, pancreatitis.", type:"action" },
+  { label:"↓ Excretion or reuptake of bilirubin", detail:"Either: Dubin-Johnson syndrome · Rotor syndrome.", type:"terminal" }
+]},
+{ id:"a31", category:"MANAGEMENT", system:"Gastroenterology", name:"Acute Diverticulitis", alt:"Diverticulitis Algorithm", desc:"Complicated vs uncomplicated management.", steps:[
+  { label:"Acute diverticulitis", detail:"Initial assessment.", type:"action" },
+  { label:"Immunocompetent + history of uncomplicated diverticulitis with similar symptoms?", detail:"Decision point.", type:"decision" },
+  { label:"Yes → Outpatient treatment", detail:"Clear liquid diet; PO analgesics, antiemetics.", type:"yes" },
+  { label:"No → Labs: CBC, BMP, CRP; consider blood culture", detail:"Imaging: abdominal CT.", type:"no" },
+  { label:"Complicated disease?", detail:"Perforation, abscess, fecal peritonitis, bowel obstruction, fistula.", type:"decision" },
+  { label:"No → Uncomplicated diverticulitis", detail:"Presence of any of the following? Systemic signs of infection, WBC > 15 × 10⁹, CRP > 140 mg/L, ASA class III or IV, duration > 5 days, vomiting, pregnancy, immunosuppression, comorbidities, fluid collections on CT.", type:"no" },
+  { label:"Yes → Inpatient treatment", detail:"NPO, IV fluids; IV analgesics, antiemetics. Empiric IV antibiotics. Perforation OR generalized peritonitis? → Emergent surgery. Bowel obstruction? → Refer to bowel obstruction article. Abscess present? → Abscess ≥ 4 cm? → US/CT-guided drainage OR surgery. No → Conservative management with IV antibiotics.", type:"yes" },
+  { label:"Empiric PO antibiotics", detail:"Metronidazole + ciprofloxacin/levofloxacin/TMP-SMX OR Amoxicillin-clavulanate OR Moxifloxacin.", type:"action" },
+  { label:"Follow-up in 2-3 days", detail:"Worsening or no improvement → Repeat imaging and consider inpatient management. Improvement → Advance diet as tolerated.", type:"action" },
+  { label:"Subsequent management", detail:"6-8 weeks after resolution: screening colonoscopy to rule out malignancy.", type:"terminal" }
+]},
+{ id:"a32", category:"MANAGEMENT", system:"Gastroenterology", name:"Suspected Bowel Obstruction (BO)", alt:"Bowel Obstruction Algorithm", desc:"ABCDE approach and definitive management of bowel obstruction.", steps:[
+  { label:"Suspected bowel obstruction (BO)", detail:"Initial assessment.", type:"action" },
+  { label:"ABCDE approach as needed", detail:"Secure airway, administer oxygen, volume resuscitation.", type:"action" },
+  { label:"Start basic management", detail:"2 large-bore IVs and keep NPO · Maintenance IV fluids and electrolyte repletion · NG tube if vomiting or distended · Supportive care: Analgesia, Antiemetics, Empiric antibiotics if fever/leukocytosis/perforation/strangulation.", type:"action" },
+  { label:"Urgent general surgery consult", detail:"Decision point.", type:"decision" },
+  { label:"Unstable patient", detail:"AXR or bedside US. If patient stabilizes → CT abdomen and pelvis with IV contrast.", type:"no" },
+  { label:"Stable patient", detail:"CT abdomen and pelvis with IV contrast.", type:"yes" },
+  { label:"Definitive management", detail:"Surgical, endoscopic, or nonoperative depending on severity and etiology.", type:"terminal" }
+]},
+{ id:"a33", category:"MANAGEMENT", system:"Gastroenterology", name:"Suspected Esophageal Perforation", alt:"Boerhaave Syndrome Algorithm", desc:"Diagnosis and management of esophageal perforation.", steps:[
+  { label:"Esophageal perforation suspected", detail:"History of endoscopy or vomiting/retching, retrosternal pain, suprasternal crepitus, Hamman sign.", type:"action" },
+  { label:"X-ray of the neck and chest (PA and lateral)", detail:"Findings: Widened mediastinum · Pneumomediastinum · Pneumothorax · Pneumoperitoneum · Subcutaneous emphysema · Pleural effusion · Mediastinal air-fluid levels.", type:"action" },
+  { label:"Any of the following?", detail:"Patient unstable/uncooperative · Pneumoperitoneum.", type:"decision" },
+  { label:"No → Contrast esophagram with gastrographin", detail:"Positive → Esophageal rupture. Negative → Contrast esophagram with barium. Inconclusive → CT scan (with oral contrast).", type:"no" },
+  { label:"Yes → CT scan (with oral contrast)", detail:"Contrast extravasation, esophageal wall edema, periesophageal fluid ± gas bubbles, extraluminal air.", type:"yes" },
+  { label:"CT scan result", detail:"Inconclusive + endoscopy planned → Endoscopy. Perforation visualized → Esophageal rupture. Perforation ruled out → Consider other diagnoses.", type:"action" },
+  { label:"Esophageal rupture/Boerhaave syndrome", detail:"Initial management: Stabilize ABCDE · NPO · IV broad-spectrum abx · IV PPI · IV analgesics.", type:"action" },
+  { label:"Size of perforation?", detail:"Small, contained → Suitable for nonsurgical treatment? Yes → Nonsurgical treatment. No → Surgical repair. Large, free → Surgical repair.", type:"decision" }
+]},
+{ id:"a34", category:"MANAGEMENT", system:"Gastroenterology", name:"Suspected Esophageal Variceal Hemorrhage", alt:"Variceal Bleed Algorithm", desc:"Resuscitation and management of variceal hemorrhage.", steps:[
+  { label:"Suspected esophageal variceal hemorrhage", detail:"Sudden-onset hematemesis and/or melena with alcoholism/portal HTN.", type:"action" },
+  { label:"Resuscitation and stabilization", detail:"At least two large-bore IVs, volume replacement; consider airway protection, blood transfusions, and vitamin K.", type:"action" },
+  { label:"Octreotide", detail:"Duration: 3-5 days (or other vasoactive drug).", type:"action" },
+  { label:"IV antibiotic prophylaxis", detail:"Prevents SBP and other infections.", type:"action" },
+  { label:"Patient hemodynamically stable?", detail:"Decision point.", type:"decision" },
+  { label:"No → Consider balloon tamponade until patient stabilizes", detail:"Temporary measure.", type:"no" },
+  { label:"Yes → Upper endoscopy", detail:"Confirmed esophageal variceal bleeding.", type:"yes" },
+  { label:"Confirmed esophageal variceal bleeding", detail:"Procedure of choice → Endoscopic band ligation. Extreme bleeding → Balloon tamponade. Alternative → Injection sclerotherapy.", type:"action" },
+  { label:"Hemostasis", detail:"Achieved.", type:"terminal" },
+  { label:"Secondary prophylaxis", detail:"Nonselective beta-blockers (e.g., propranolol) + endoscopic band ligation.", type:"action" },
+  { label:"Rebleeding", detail:"Repeat endoscopy. Failure → TIPS.", type:"action" }
+]},
+{ id:"a35", category:"DIAGNOSIS", system:"Gastroenterology", name:"Suspected GERD", alt:"GERD Algorithm", desc:"Symptom-based evaluation of GERD.", steps:[
+  { label:"Suspected GERD", detail:"Either: Atypical symptoms · Typical symptoms · Extraesophageal symptoms.", type:"action" },
+  { label:"Chest pain?", detail:"Yes → Exclude cardiac cause (ECG, troponin). No → Alarm symptoms?", type:"decision" },
+  { label:"Alarm symptoms?", detail:"Dysphagia, odynophagia, early satiety, anemia, GI bleed, persistent vomiting, unintentional weight loss, aspiration pneumonia. Yes → Upper GI endoscopy. No → High risk for Barrett esophagus?", type:"decision" },
+  { label:"High risk for Barrett esophagus?", detail:"Male, European descent, age ≥ 50, obese, symptoms ≥ 5 years. Yes → Upper GI endoscopy. No → Empiric therapy: PPI for 8 weeks + Lifestyle modifications.", type:"decision" },
+  { label:"Empiric therapy response", detail:"Improvement → Assumed GERD. No response → Consider further diagnostic evaluation. Partial → Optimize PPI therapy.", type:"action" },
+  { label:"Upper GI endoscopy", detail:"Normal → Esophageal pH monitoring (if suspected NERD). Abnormal → NERD or ERD.", type:"action" },
+  { label:"Esophageal pH monitoring", detail:"Abnormal pH → NERD or ERD. Normal pH → Consider further diagnostic evaluation.", type:"action" }
+]},
+{ id:"a36", category:"MANAGEMENT", system:"Gastroenterology", name:"Suspected Acute Pancreatitis", alt:"Pancreatitis Algorithm", desc:"Diagnosis and management of acute pancreatitis.", steps:[
+  { label:"Suspected acute pancreatitis", detail:"Epigastric pain radiating to back, nausea, vomiting.", type:"action" },
+  { label:"Diagnosis", detail:"2 of 3: Characteristic abdominal pain · Serum lipase/amylase > 3x ULN · Characteristic findings on cross-sectional imaging.", type:"action" },
+  { label:"Initial management", detail:"Aggressive IV fluid resuscitation (Ringer's lactate) · Analgesia (opioids) · Antiemetics · NPO initially, then early enteral nutrition · Treat underlying cause.", type:"action" },
+  { label:"Assess severity", detail:"Mild (no organ failure, no local complications) → Supportive care. Moderately severe (transient organ failure < 48h or local complications) → Supportive care + monitor. Severe (persistent organ failure > 48h) → ICU admission.", type:"action" }
+]},
+{ id:"a37", category:"MANAGEMENT", system:"Infectious Disease", name:"Management of Suspected Meningitis", alt:"Meningitis Algorithm", desc:"Empiric therapy and LP-based management.", steps:[
+  { label:"Suspected meningitis", detail:"Initial evaluation and stabilization.", type:"action" },
+  { label:"Initial evaluation and stabilization", detail:"Initiate droplet precautions · Emergency stabilization · IV access, 2 sets blood cultures · CBC, BMP, CRP, coagulation panel.", type:"action" },
+  { label:"Contraindications to LP?", detail:"Decision point.", type:"decision" },
+  { label:"No → LP for CSF analysis, PCR, culture", detail:"Empiric therapy ASAP: IV antimicrobial therapy PLUS IV dexamethasone.", type:"no" },
+  { label:"Yes → Start empiric therapy immediately", detail:"IV antimicrobial therapy PLUS IV dexamethasone. Signs of raised ICP? Yes → Neuroimaging. Increased risk of herniation? Yes → Neurosurgical consult. No → LP.", type:"yes" },
+  { label:"CSF findings", detail:"Viral: Leukocytes 10-500, ↑ Lymphocytes, Normal glucose, ↑ Protein → Discontinue antibiotics. Bacterial: Leukocytes > 1000, ↑ Granulocytes, ↓ Glucose → Continue empiric therapy. Normal/Inconclusive → Consider DDx.", type:"action" },
+  { label:"Adjust therapy according to PCR and culture results", detail:"Consult infectious diseases · Provide postexposure prophylaxis if indicated.", type:"terminal" }
+]},
+{ id:"a38", category:"MANAGEMENT", system:"Infectious Disease", name:"Treatment of Community-Acquired Pneumonia (CAP)", alt:"CAP Algorithm", desc:"PSI/CURB-65 based outpatient vs inpatient management.", steps:[
+  { label:"Treatment of community-acquired pneumonia (CAP)", detail:"Calculate PSI or CURB-65 score to assess need for hospitalization.", type:"action" },
+  { label:"PSI ≤ 70, CURB-65 ≤ 1 → Outpatient treatment", detail:"Comorbidities or risk factors for resistant pathogens? (Chronic heart/lung/renal/hepatic disease · Immunosuppressed · IV antibiotics in past 90 days). No → Monotherapy: Amoxicillin, Doxycycline, Macrolide. Yes → Combination therapy: β-lactam + macrolide OR respiratory fluoroquinolone.", type:"yes" },
+  { label:"PSI > 90, CURB-65 ≥ 2 → Inpatient treatment", detail:"Suspected pseudomonas? Yes → Antipseudomonal β-lactam IV. No → Hypotension requiring vasopressors OR respiratory failure? No → Severe CAP criteria met? No → Non-ICU: β-lactam IV + Azithromycin/Clarithromycin/Doxycycline. Yes → ICU: β-lactam IV + Azithromycin/Clarithromycin/Doxycycline/Levofloxacin/Moxifloxacin. Yes → ICU.", type:"no" },
+  { label:"Suspected MRSA involvement?", detail:"Previous MRSA in sputum, severe CAP with recent hospitalization, IV antibiotics in past 90 days. Yes → Add anti-MRSA therapy: Vancomycin IV or linezolid PO.", type:"decision" }
+]},
+{ id:"a39", category:"DIAGNOSIS", system:"Infectious Disease", name:"Serological Testing Algorithm for Syphilis", alt:"Syphilis Serology Algorithm", desc:"Standard vs reverse algorithm for syphilis testing.", steps:[
+  { label:"Either: Features of syphilis · Candidate for screening", detail:"Choice depends on local laboratory.", type:"action" },
+  { label:"Standard algorithm", detail:"First test: NTT. Positive → TT. Negative → Assess risk status.", type:"no" },
+  { label:"Reverse algorithm", detail:"First test: TT. Negative → Assess risk status. Positive → NTT. Negative → Perform different TT. Positive → Current or past syphilis likely.", type:"yes" },
+  { label:"Assess risk status", detail:"Low → Syphilis unlikely. High → Early primary syphilis cannot be excluded. Presumptive treatment, retest after 2-4 weeks.", type:"decision" },
+  { label:"Current or past syphilis likely", detail:"Positive NTT and TT. Treat as syphilis.", type:"terminal" },
+  { label:"First test likely false positive", detail:"Negative NTT and TT. Repeat testing after 2-4 weeks in patients with risk factors.", type:"terminal" }
+]},
+{ id:"a40", category:"MANAGEMENT", system:"Infectious Disease", name:"Management of Lyme Disease", alt:"Lyme Disease Algorithm", desc:"Erythema migrans and serology-based management.", steps:[
+  { label:"Confirmed or possible tick bite", detail:"Initial assessment.", type:"action" },
+  { label:"Erythema migrans?", detail:"Decision point.", type:"decision" },
+  { label:"Yes → Antibiotic treatment", detail:"Doxycycline, amoxicillin, or cefuroxime.", type:"yes" },
+  { label:"No → Symptoms of early or late disseminated Lyme disease?", detail:"Decision point.", type:"no" },
+  { label:"Yes → Serological testing", detail:"Positive → Antibiotic treatment. Negative → Consider other causes.", type:"yes" },
+  { label:"No → Criteria met for Lyme disease PEP?", detail:"Decision point.", type:"no" },
+  { label:"Yes → PEP for Lyme disease", detail:"Single dose of doxycycline 200 mg.", type:"yes" },
+  { label:"No → Lyme disease unlikely", detail:"No treatment needed.", type:"no" }
+]},
+{ id:"a41", category:"MANAGEMENT", system:"Infectious Disease", name:"Pharmacotherapy for the Agitated or Violent Patient", alt:"Agitation Algorithm", desc:"Etiology-based pharmacotherapy for agitation.", steps:[
+  { label:"Medications for agitation indicated", detail:"Patient is a clear danger to self or other and unresponsive to nonpharmacological methods.", type:"action" },
+  { label:"Treat critical or easily reversible causes first or concurrently", detail:"Hypoxia, shock, hypoglycemia, pain, seizure, acute urinary retention.", type:"action" },
+  { label:"Very severe agitation or violent behavior?", detail:"Decision point.", type:"decision" },
+  { label:"Yes → Consider: Antipsychotics + Benzodiazepines · Ketamine", detail:"Rapid tranquilization.", type:"yes" },
+  { label:"No → Etiology-based treatment", detail:"Delirium or psychotic disorder → Antipsychotics + BZDs · Ketamine. Unknown history → Psychosis? Yes → 2nd-gen antipsychotic (olanzapine, risperidone). No → Benzodiazepine (lorazepam, midazolam). CNS stimulant intoxication or depressant withdrawal → Benzodiazepine. CNS depressant intoxication → 1st-gen antipsychotic (haloperidol).", type:"no" },
+  { label:"Safe approach to pharmacotherapy", detail:"Start at lowest possible dose (reduce for older adults) · Monitor for oversedation, hemodynamic instability, respiratory compromise · Repeat only if necessary.", type:"action" },
+  { label:"Refractory agitation?", detail:"Yes → Reassess and consider alternative agents. No → Discontinue medication as soon as possible.", type:"decision" }
+]},
+{ id:"a42", category:"DIAGNOSIS", system:"Hematology", name:"Diagnosis of Anemia", alt:"Anemia Algorithm", desc:"MCV-based classification of anemia.", steps:[
+  { label:"Anemia", detail:"↓ Hemoglobin. Measure MCV.", type:"action" },
+  { label:"Microcytic (MCV < 80 fL)", detail:"↓ Ferritin → ↑ TIBC → Iron deficiency. ↔/↑ Ferritin → ↔/↓ TIBC → ↑ CRP/ESR → Anemia of chronic disease. Abnormal Hb electrophoresis → β-Thalassemia, Hb H disease, Hb Bart. Basophilic stippling and/or ringed sideroblasts → Sideroblastic anemia, Lead poisoning.", type:"yes" },
+  { label:"Normocytic (MCV 80-100 fL)", detail:"↓ Reticulocytes → ↓ EPO → CKD. ↔/↑ EPO, Pancytopenia → Aplastic anemia. ↔/↑ Reticulocytes → Signs of hemolysis? (↓ Haptoglobin, ↑ LDH, ↑ Indirect bilirubin). No → Blood loss. Yes → Hemolytic anemia.", type:"no" },
+  { label:"Macrocytic (MCV > 100 fL)", detail:"Megaloblastic changes on smear? No → Reticulocytosis, Liver disease, Alcohol use, MDS, Hypothyroidism, Multiple myeloma. Yes → Folate and/or B12 deficiency.", type:"decision" }
+]},
+{ id:"a43", category:"DIAGNOSIS", system:"Hematology", name:"Suspected Iron Deficiency Anemia", alt:"Iron Deficiency Algorithm", desc:"Ferritin-based diagnosis of iron deficiency.", steps:[
+  { label:"Suspected iron deficiency anemia", detail:"Hb < 13 g/dL (M), < 12 g/dL (F), < 11 g/dL (pregnant). Normocytic or microcytic.", type:"action" },
+  { label:"Obtain serum ferritin", detail:"Decision point.", type:"decision" },
+  { label:"Ferritin < 45 ng/mL", detail:"↑ TIBC, ↓ TSAT, low serum iron → Iron deficiency anemia.", type:"yes" },
+  { label:"Ferritin 45-100 ng/mL", detail:"Get iron, transferrin, TIBC, TSAT. Any other result → sTfR. Normal sTfR → FEP. FEP not elevated but high suspicion → Bone marrow biopsy. Decreased/absent iron stores → Iron deficiency anemia.", type:"no" },
+  { label:"Ferritin 101-500 ng/mL", detail:"Comorbid chronic inflammatory state? (CKD, CHF). Yes → Get iron, transferrin, TIBC, TSAT. No → ↓ TIBC, ↑ TSAT, high serum iron → IDA unlikely.", type:"decision" },
+  { label:"Ferritin > 500 ng/mL", detail:"↓ TIBC, ↑ TSAT, high serum iron → IDA unlikely.", type:"terminal" }
+]},
+{ id:"a44", category:"MANAGEMENT", system:"Neurology", name:"Evaluation and Management of Ischemic Stroke", alt:"Stroke Algorithm", desc:"Time-based thrombolysis and thrombectomy decision.", steps:[
+  { label:"Patient with features suggestive of stroke", detail:"Sudden-onset focal neurological deficits.", type:"action" },
+  { label:"Check POC glucose", detail:"To rule out stroke mimics.", type:"action" },
+  { label:"Initial evaluation (do not delay imaging)", detail:"ECG, CBC, BMP, troponin, coagulation panel · Establish time of symptom onset · Assess severity (NIHSS) · Stabilize and monitor BP, ICP, glucose · Neurology consult.", type:"action" },
+  { label:"Emergency noncontrast CT or MRI head", detail:"Decision point.", type:"decision" },
+  { label:"Bleeding present → Manage hemorrhage", detail:"Reverse anticoagulation, neurosurgery consult.", type:"no" },
+  { label:"Bleeding absent → Contraindications for IV thrombolysis?", detail:"Decision point.", type:"yes" },
+  { label:"Yes → Neurovascular studies", detail:"To assess for thrombectomy.", type:"yes" },
+  { label:"No → Time since symptom onset", detail:"Decision point.", type:"no" },
+  { label:"≤ 3 hrs", detail:"Administer IV thrombolysis.", type:"yes" },
+  { label:"3-4.5 hrs", detail:"Eligible for IV thrombolysis? Yes → Administer IV thrombolysis. No → Neurovascular studies.", type:"decision" },
+  { label:"> 4.5 hrs", detail:"DW-MRI. Eligible? Yes → IV thrombolysis. No → Neurovascular studies.", type:"no" },
+  { label:"Neurovascular studies", detail:"Eligible → Mechanical thrombectomy. Not eligible → Individual specialist management.", type:"action" }
+]},
+{ id:"a45", category:"MANAGEMENT", system:"Neurology", name:"TIA — Reversible Focal Neurological Symptoms", alt:"TIA Algorithm", desc:"ABCD² score-based TIA management.", steps:[
+  { label:"Reversible focal neurological symptoms suggesting TIA", detail:"Symptoms resolved within 24 hours? Yes → Rule out differentials (hypoglycemia, hyponatremia, infections). +/- Determine etiology (AFib). Immediate ECG, POC glucose, labs. Neuroimaging: CT or MRI within 24 hours. Normal → Manage as TIA. Abnormal → Treat as acute stroke.", type:"action" },
+  { label:"Manage as TIA", detail:"Risk stratify with ABCD² · Start antithrombotic therapy · Determine etiology with neurovascular and cardiac studies · Start long-term stroke prevention.", type:"action" },
+  { label:"ABCD² score", detail:"Determine 2-day stroke risk. Symptom onset < 72 hours PLUS: Score ≥ 3 OR Score 0-2 + inability to complete outpatient work-up OR evidence of focal ischemia OR high-risk clinician judgement. Yes → Inpatient work-up. No → Outpatient work-up.", type:"action" },
+  { label:"Antithrombotic therapy", detail:"Start within 24 hours. Low risk TIA: ABCD² 0-3 → Aspirin. Moderate-high risk: ABCD² ≥ 4 → Consider dual antiplatelet therapy for 21 days: Aspirin and clopidogrel.", type:"action" },
+  { label:"Neurovascular and cardiac studies", detail:"Complete within 24 hours. Cardiac monitoring → Cardiology consult ± anticoagulation. Echocardiogram → Cardiology consult ± anticoagulation. CT/MRI angiography or carotid Doppler → Treat carotid stenosis (e.g., revascularization).", type:"action" },
+  { label:"Long-term stroke prevention", detail:"BP control, statin therapy, smoking cessation, diabetes and obesity screening.", type:"terminal" }
+]},
+{ id:"a46", category:"MANAGEMENT", system:"Neurology", name:"Convulsive Seizure — Status Epilepticus", alt:"Status Epilepticus Algorithm", desc:"Time-based management of status epilepticus.", steps:[
+  { label:"Convulsive seizure", detail:"Initial assessment.", type:"action" },
+  { label:"Initial assessment", detail:"History of epilepsy? Stroke or cerebral infection? Known diabetes? Alcohol? Opiates? · Start stopwatch · ABCD (+ neuro exam) · Labs: electrolytes, glucose, toxicology, ABG, AED levels · Insert 2+ IV catheters · Monitoring + O₂.", type:"action" },
+  { label:"Initiate supportive pharmacological therapy", detail:"Glucose, thiamine, naloxone, depending on suspected cause.", type:"action" },
+  { label:"Seizure stops?", detail:"Yes → Further diagnostics. No → Status epilepticus (5-min seizure).", type:"decision" },
+  { label:"Initial treatment phase (5-20 min)", detail:"Benzodiazepines: IV lorazepam OR IV diazepam OR IM midazolam. No IV: Rectal diazepam, buccal/intranasal lorazepam/midazolam.", type:"action" },
+  { label:"Second treatment phase (20-40 min)", detail:"Non-BZD AEDs: IV fosphenytoin OR IV valproic acid OR IV levetiracetam OR IV phenobarbital.", type:"action" },
+  { label:"Third treatment phase (40-60 min)", detail:"Anesthetic doses: Thiopental OR Propofol OR Midazolam OR Pentobarbital.", type:"action" },
+  { label:"ICU admission", detail:"Monitoring · Intubation · Continuous EEG.", type:"terminal" }
+]},
+{ id:"a47", category:"DIAGNOSIS", system:"Obstetrics & Gynecology", name:"Diagnostic Approach to Palpable Breast Mass", alt:"Breast Mass Algorithm", desc:"Age-based diagnostic algorithm for palpable breast mass.", steps:[
+  { label:"Palpable breast mass", detail:"Initial assessment.", type:"action" },
+  { label:"Patient age", detail:"Decision point.", type:"decision" },
+  { label:"< 30 years", detail:"High clinical suspicion? No → Observe for 1-2 months. Mass resolves → No further management. Mass persists → Ultrasound. Yes → Ultrasound.", type:"no" },
+  { label:"≥ 30 years", detail:"Diagnostic mammography or DBT. Presence of clinical features of breast cancer OR imaging findings concerning for malignancy? No → Ultrasound. Yes → 30-39 years → Consider US before biopsy. ≥ 40 years → Core needle biopsy.", type:"yes" },
+  { label:"Ultrasound findings", detail:"No abnormalities → High suspicion? No → Clinical surveillance 1-2 years. Yes → < 30 → Mammography then biopsy. ≥ 30 → Core needle biopsy. Breast cyst → Evaluate cyst characteristics. Solid mass → Concern for malignancy? No → Clinical surveillance. Yes → Core needle biopsy.", type:"action" }
+]},
+{ id:"a48", category:"RESUSCITATION", system:"Pediatrics", name:"Neonatal Resuscitation Algorithm", alt:"NRP Algorithm", desc:"Newborn resuscitation protocol.", steps:[
+  { label:"Birth", detail:"Initial assessment.", type:"action" },
+  { label:"Born at term? Good muscle tone? Breathing and/or crying without difficulty?", detail:"Yes to all → Standard postdelivery care. No to any → Initial resuscitation.", type:"decision" },
+  { label:"Initial resuscitation", detail:"Dry with towel, clamp and cut cord · Radiant warmer · Clear secretions and position neck in slight extension · Stimulate by rubbing back and soles · Monitor breathing effort, tone, color, temperature.", type:"action" },
+  { label:"Within first minute of birth", detail:"Apnea? Gasping? HR < 100 bpm? Yes → Initiate PPV, monitor. No → Labored breathing or persistent cyanosis but HR ≥ 100 bpm? Yes → Clear secretions, position neck, provide oxygen, consider CPAP, monitor.", type:"decision" },
+  { label:"After 15 seconds: HR increase?", detail:"Yes → Continue PPV. No → Troubleshoot PPV.", type:"decision" },
+  { label:"After 30 seconds: HR < 60 bpm?", detail:"Yes → Initiate chest compressions · Place advanced airway, provide 100% FiO₂ · Consider intravascular access.", type:"decision" },
+  { label:"HR remains < 60 bpm despite adequate CPR", detail:"Administer epinephrine · Consider alternative causes of bradycardia.", type:"terminal" }
+]},
+{ id:"a49", category:"RESUSCITATION", system:"Pediatrics", name:"Pediatric Advanced Life Support (PALS)", alt:"PALS Algorithm", desc:"Pediatric cardiac arrest algorithm.", steps:[
+  { label:"Unresponsive child", detail:"Abnormal or absent respirations, or no pulse.", type:"action" },
+  { label:"Start CPR", detail:"15:2 for two rescuers prepubertal · 30:2 for two rescuers from puberty · 30:2 for single rescuer · Depth: 5 cm (children), 4 cm (infants) · Rate 100-120/min · Bag-mask 100% O₂ · Attach defibrillator.", type:"action" },
+  { label:"Analyze rhythm", detail:"Decision point.", type:"decision" },
+  { label:"Shockable rhythms", detail:"VF · Pulseless VT.", type:"yes" },
+  { label:"Nonshockable rhythms", detail:"Asystole · PEA.", type:"no" },
+  { label:"Shock as soon as possible", detail:"Initial: 2 J/kg · Second: 4 J/kg · Increase up to 10 J/kg or adult dose.", type:"action" },
+  { label:"Epinephrine 0.01 mg/kg IV/IO", detail:"Max single dose 1 mg · Repeat every 3-5 minutes.", type:"action" },
+  { label:"Resume CPR for 2 minutes", detail:"In parallel: consider advanced airway, IV/IO access, treat reversible causes.", type:"action" },
+  { label:"Check for signs of ROSC", detail:"Palpable pulse · Measurable BP · Increase in EtCO₂.", type:"decision" },
+  { label:"Resuscitation drugs for shockable rhythms", detail:"After 2nd: Epi 0.01 mg/kg · After 3rd: Amiodarone 5 mg/kg OR Lidocaine 1 mg/kg · After 4th: Epi · After 5th: Amiodarone 5 mg/kg OR Lidocaine 1 mg/kg.", type:"action" },
+  { label:"Postresuscitation care", detail:"Signs of ROSC → Postresuscitation care.", type:"terminal" }
+]},
+{ id:"a50", category:"RESUSCITATION", system:"Pediatrics", name:"Pediatric BLS — ≥ 2 Rescuers", alt:"Pediatric BLS Algorithm", desc:"Two-rescuer pediatric basic life support.", steps:[
+  { label:"Assess scene safety", detail:"Ensure safety.", type:"action" },
+  { label:"Unresponsive child with absent or abnormal breathing", detail:"Confirm unresponsiveness.", type:"action" },
+  { label:"Call for help", detail:"First rescuer: immediate CPR · Second rescuer: Activate EMS and retrieve AED.", type:"action" },
+  { label:"Assess for signs of life", detail:"Basic airway maneuvers · Visible foreign body removal · Look, listen, feel · Central pulse check < 10 seconds.", type:"action" },
+  { label:"Pulse present, normal breathing → Recovery position", detail:"Monitor.", type:"yes" },
+  { label:"Pulse present, abnormal breathing → Manage respiratory failure", detail:"1 rescue breath every 2-3 seconds · Pulse check every 2 minutes · Naloxone for opioid overdose. HR ≤ 60 + poor perfusion? Yes → Start chest compressions. No → Continue rescue breaths.", type:"no" },
+  { label:"Pulse absent, apnea, or agonal breathing → Start chest compressions", detail:"30:2 single, 15:2 ≥ 2 rescuers · Depth 5 cm (children), 4 cm (infants) · Rate 100-120/min · Attach AED while CPR continues · Change roles every 2 min.", type:"decision" },
+  { label:"Pause CPR for rhythm analysis and pulse check", detail:"Shock advised → Deliver shock. Shock not advised → Immediately resume CPR for 2 minutes.", type:"action" },
+  { label:"Endpoints", detail:"Arrival of PALS-trained providers · Clear signs of life · Rescuer too fatigued.", type:"terminal" }
+]},
+{ id:"a51", category:"RESUSCITATION", system:"Pediatrics", name:"Pediatric BLS — Single Rescuer", alt:"Single Rescuer BLS", desc:"Single-rescuer pediatric basic life support.", steps:[
+  { label:"Assess scene safety", detail:"Ensure safety.", type:"action" },
+  { label:"Unresponsive child with absent or abnormal breathing", detail:"Confirm unresponsiveness.", type:"action" },
+  { label:"Call for help", detail:"Activate EMS before starting CPR.", type:"action" },
+  { label:"Assess for signs of life", detail:"Basic airway maneuvers · Visible foreign body removal · Look, listen, feel · Central pulse check < 10 secs.", type:"action" },
+  { label:"Pulse present, normal breathing → Recovery position", detail:"Monitor.", type:"yes" },
+  { label:"Pulse present, abnormal breathing → Manage respiratory failure", detail:"1 rescue breath every 2-3 seconds · Pulse check every 2 minutes · Naloxone for opioid overdose. HR ≤ 60 + poor perfusion? Yes → Start chest compressions. No → Continue rescue breaths.", type:"no" },
+  { label:"Pulse absent, apnea, or agonal breathing → Witnessed collapse?", detail:"Yes → Retrieve AED and use immediately. No → Start chest compressions.", type:"decision" },
+  { label:"Start chest compressions", detail:"30:2 · Depth 5 cm (children), 4 cm (infants) · Rate 100-120/min · Naloxone for suspected opioid overdose · Use AED once available.", type:"action" },
+  { label:"Still alone after 2 mins?", detail:"Yes → Activate EMS, retrieve and attach AED. No → Switch to 15:2. 2nd rescuer to attach AED while CPR continues.", type:"decision" },
+  { label:"Pause CPR for rhythm analysis and pulse check", detail:"Shock advised → Deliver shock. Shock not advised → Immediately resume CPR for 2 mins.", type:"action" },
+  { label:"Endpoints", detail:"Arrival of PALS-trained providers · Clear signs of life · Rescuer too fatigued.", type:"terminal" }
+]},
+{ id:"a52", category:"MANAGEMENT", system:"Pediatrics", name:"Bilious Vomiting in an Infant", alt:"Bilious Vomiting Algorithm", desc:"Imaging-based diagnosis of intestinal obstruction.", steps:[
+  { label:"Bilious vomiting in an infant", detail:"Possible intestinal obstruction.", type:"action" },
+  { label:"Initial management", detail:"NPO · NG or OG tube placement · IV fluids · Correct electrolyte abnormalities.", type:"action" },
+  { label:"Hemodynamically unstable or signs of peritonitis?", detail:"Fever, guarding, rebound tenderness.", type:"decision" },
+  { label:"Yes → IV antibiotics + emergency surgery", detail:"Resuscitate and operate.", type:"yes" },
+  { label:"No → Abdominal X-ray", detail:"Decision point.", type:"no" },
+  { label:"Pneumoperitoneum (Rigler sign)", detail:"Bowel perforation → IV antibiotics + emergency surgery.", type:"terminal" },
+  { label:"Dilated loops of bowel", detail:"Contrast enema. Microcolon → Meconium ileus. Rectosigmoid transition zone → Hirschsprung disease.", type:"terminal" },
+  { label:"'Double-bubble' sign", detail:"Duodenal atresia → Refer to duodenal atresia article.", type:"terminal" },
+  { label:"NG tube in misplaced duodenum + right-sided jejunal markings + absent stool filled colon in RLQ", detail:"Upper GI contrast study. Abnormal duodenal junction + corkscrew appearance → Malrotation with midgut volvulus.", type:"terminal" },
+  { label:"Pneumatosis, portal venous gas", detail:"Necrotizing enterocolitis → Refer to NEC article.", type:"terminal" }
+]},
+{ id:"a53", category:"MANAGEMENT", system:"Pediatrics", name:"Postresuscitation Care", alt:"Post-Cardiac Arrest Care", desc:"Post-resuscitation stabilization and management.", steps:[
+  { label:"Postresuscitation care", detail:"Initial stabilization.", type:"action" },
+  { label:"Manage airway, breathing, circulation", detail:"SpO₂ 90-98% · PaCO₂ 35-45 mm Hg · MAP > 65 mm Hg.", type:"action" },
+  { label:"Obtain 12-lead ECG", detail:"Decision point.", type:"decision" },
+  { label:"Acute ST elevation?", detail:"Yes → Urgent PCI. No → Continue postresuscitation care.", type:"yes" },
+  { label:"Identify and treat underlying causes and complications", detail:"Consider POCUS, bedside ECHO, and/or whole-body CT.", type:"action" },
+  { label:"Assess patient off sedation and neuromuscular blockade", detail:"Decision point.", type:"decision" },
+  { label:"Unable to follow commands and/or myoclonus", detail:"Perform EEG. Seizure activity → Antiepileptic treatment. No seizure → Temperature control (32-37.5°C), Neuroprotective measures, Neuroprognostication.", type:"no" },
+  { label:"Able to follow commands", detail:"Ongoing critical care as required.", type:"yes" }
+]},
+{ id:"a54", category:"MANAGEMENT", system:"Surgery", name:"Penetrating Abdominal Trauma", alt:"Abdominal Trauma Algorithm", desc:"ABCDE approach and surgical indications.", steps:[
+  { label:"Penetrating abdominal trauma", detail:"Initial assessment.", type:"action" },
+  { label:"Begin primary survey ABC(DE) approach", detail:"Airway → Intubate if indicated. Breathing → O₂ if indicated. Circulation → FAST. Resuscitation if indicated (CPR, IV fluids, vasopressors).", type:"action" },
+  { label:"Continued hemodynamic instability", detail:"Consider diagnostic peritoneal lavage.", type:"no" },
+  { label:"Penetrating object still in situ?", detail:"Decision point.", type:"decision" },
+  { label:"No → Evisceration, peritonitis, rectal bleeding, bloody NG aspirate?", detail:"Yes → Emergency laparotomy. No → Additional diagnostics in stable patients (CT, MRI).", type:"no" },
+  { label:"Indication for surgery?", detail:"Peritoneal penetration · Intraabdominal bleeding · Pneumoperitoneum · Severe organ injury. Yes → Surgery as needed. No → Conservative management.", type:"decision" },
+  { label:"Consider tetanus prophylaxis and broad-spectrum antibiotic prophylaxis", detail:"Standard.", type:"terminal" }
+]},
+{ id:"a55", category:"MANAGEMENT", system:"Surgery", name:"Penetrating Thoracic Trauma", alt:"Thoracic Trauma Algorithm", desc:"ABCDE approach and surgical indications.", steps:[
+  { label:"Penetrating thoracic trauma", detail:"Initial assessment.", type:"action" },
+  { label:"Consider abdominal trauma", detail:"Penetrating wound below nipples.", type:"action" },
+  { label:"Begin primary survey ABC(DE) approach", detail:"Airway → Intubate if indicated (not if tension pneumothorax or cardiac tamponade). Breathing → O₂ if indicated. Circulation → EFAST. Resuscitation.", type:"action" },
+  { label:"Clinical signs of tension pneumothorax?", detail:"Absent breath sounds, hyperresonance, tracheal deviation, JVD.", type:"decision" },
+  { label:"Yes → Needle thoracostomy, then chest tube", detail:"Immediate decompression.", type:"yes" },
+  { label:"No → Oxygen if indicated", detail:"Continue assessment.", type:"no" },
+  { label:"Cardiac tamponade, hemodynamic instability, or cardiac arrest?", detail:"Decision point.", type:"decision" },
+  { label:"Yes → Resuscitation", detail:"CPR, IV fluids, vasopressors. Current or impending arrest? Yes → Consider resuscitative (ED) thoracotomy. No → Consider emergency pericardiocentesis.", type:"yes" },
+  { label:"No → Penetrating object still in situ?", detail:"Decision point.", type:"no" },
+  { label:"No → Additional imaging in stable patients", detail:"CT chest, bronchoscopy, angiography.", type:"no" },
+  { label:"Indication for surgery?", detail:"Diaphragmatic rupture · Extensive hemothorax · Severe organ injury. Yes → Urgent thoracotomy. No → Conservative management.", type:"decision" },
+  { label:"Consider", detail:"Tetanus prophylaxis · Broad spectrum antibiotic prophylaxis · Chest tube if pneumothorax.", type:"terminal" }
+]},
+{ id:"a56", category:"MANAGEMENT", system:"Surgery", name:"Suspected Pneumothorax", alt:"Pneumothorax Algorithm", desc:"Stability-based management of pneumothorax.", steps:[
+  { label:"Suspected pneumothorax", detail:"Initial assessment.", type:"action" },
+  { label:"Trauma patient?", detail:"Yes → ATLS protocols. No → Respiratory support & pain control: Upright positioning, O₂, Analgesia.", type:"decision" },
+  { label:"≥ 1 of the following?", detail:"RR ≥ 24/min · SpO₂ ≤ 90% · Speaking in incomplete sentences · HR < 60 or > 120/min · SBP < 90 mm Hg.", type:"decision" },
+  { label:"Yes (Unstable) → Suspected tension pneumothorax?", detail:"Distended neck veins, pulsus paradoxus. Yes → Emergency chest tube; consider needle thoracostomy. No → STAT bedside US or portable CXR. Pneumothorax confirmed → Emergency chest tube. No signs → Consider other diagnoses.", type:"yes" },
+  { label:"No (Stable) → Obtain imaging", detail:"CXR, lung US, chest CT. Bilateral → Chest tube. Signs of pneumothorax → Age > 50 + smoking, or lung disease? No → Primary spontaneous pneumothorax. Yes → Secondary spontaneous pneumothorax.", type:"no" },
+  { label:"Primary spontaneous pneumothorax", detail:"All of: 18-50 yo, apex-to-cupula < 3 cm, mobilization without dyspnea? Yes → Conservative management. No → Consider needle aspiration. Unsuccessful → Chest tube. Post-procedure CXR.", type:"action" },
+  { label:"Secondary spontaneous pneumothorax", detail:"Apex-to-cupula < 3 cm → Observe for 24 hr (Serial CXR). Progression → Chest tube. Apex-to-cupula ≥ 3 cm → Chest tube, ICU transfer, thoracic surgery consult.", type:"action" }
+]},
+{ id:"a57", category:"MANAGEMENT", system:"Surgery", name:"Sigmoid Volvulus", alt:"Sigmoid Volvulus Algorithm", desc:"Endoscopic detorsion and surgical management.", steps:[
+  { label:"Sigmoid volvulus", detail:"Coffee bean sign on x-ray, whirl sign on CT.", type:"action" },
+  { label:"Initial management", detail:"NPO · NG tube placement · IV fluids · Correct electrolytes.", type:"action" },
+  { label:"Hemodynamically unstable or signs of peritonitis?", detail:"Fever, guarding, rebound tenderness.", type:"decision" },
+  { label:"Yes → IV antibiotics + emergency surgery", detail:"Hartmann procedure preferred.", type:"yes" },
+  { label:"No → Sigmoidoscopic detorsion", detail:"Decision point.", type:"no" },
+  { label:"Successful detorsion?", detail:"Yes → Endoscopic signs of mucosal ischemia? No → Soft rectal tube placement + semi-elective surgery (within 72 hours). Sigmoid colectomy + primary anastomosis preferred. Yes → IV antibiotics + emergency surgery. No → IV antibiotics + emergency surgery.", type:"decision" }
+]},
+{ id:"a58", category:"MANAGEMENT", system:"Surgery", name:"Acute Gout Attack", alt:"Gout Algorithm", desc:"Monotherapy vs combination therapy for acute gout.", steps:[
+  { label:"Acute gout attack", detail:"Initial management.", type:"action" },
+  { label:"Rest and ice; continue any preexisting ULT", detail:"Supportive care.", type:"action" },
+  { label:"Initiate pharmacotherapy within 24 hours of symptom onset", detail:"Early treatment improves outcomes.", type:"action" },
+  { label:"Attack involving ≥ 4 joints, > 1 large joint OR severe pain?", detail:"Decision point.", type:"decision" },
+  { label:"No → Monotherapy with any first-line agent", detail:"Choice depends on clinician and patient preference.", type:"no" },
+  { label:"Yes → Combination therapy", detail:"Decision point.", type:"yes" },
+  { label:"First-line agents", detail:"Systemic glucocorticoids (PO/IV): preferable if NSAIDs contraindicated. Intraarticular glucocorticoids: no systemic effects. NSAIDs: ↑ risk PUD and AKI. Colchicine: contraindicated in severe CKD.", type:"action" },
+  { label:"Combination therapy", detail:"Either: NSAIDs PLUS Intraarticular glucocorticoids OR Colchicine PLUS any one (Intraarticular glucocorticoids, NSAIDs, Systemic glucocorticoids).", type:"action" },
+  { label:"Second-line agents", detail:"IL-1 inhibitors, ACTH. In consultation with rheumatology if first-line agents not tolerated or contraindicated.", type:"terminal" }
+]},
+{ id:"a59", category:"MANAGEMENT", system:"Surgery", name:"Suspected Acute Pyelonephritis", alt:"Pyelonephritis Algorithm", desc:"Complicated vs uncomplicated management.", steps:[
+  { label:"Suspected acute pyelonephritis", detail:"Fever, chills · Flank pain, CVA tenderness · Lower urinary tract symptoms.", type:"action" },
+  { label:"Check vitals", detail:"Hemodynamic instability? Yes → Fluid resuscitation, admit to ICU, initiate sepsis workup. No → CBC, BMP, CRP, UA & urine culture.", type:"decision" },
+  { label:"Uncomplicated pyelonephritis", detail:"Indications for initial imaging? (New eGFR ≤ 40, Known/suspected urolithiasis, Recurrent pyelonephritis). No → Persistent nausea/vomiting, hypovolemia, no suitable antibiotic, poor adherence. No → Outpatient management: PO antibiotics, Analgesia, Antiemetics, fluid intake.", type:"no" },
+  { label:"Complicated pyelonephritis", detail:"Inpatient management: Blood cultures (2 sets), CT abdomen with & without contrast. IV fluids, IV empiric antibiotics, Analgesia, Antiemetics. Complications? Abscess → < 3 cm & no sepsis: Percutaneous drainage. ≥ 3 cm or sepsis: Urology/IR consult. Obstruction → Urology/IR consult. Life-threatening urosepsis → Urology/surgery consult for possible nephrectomy. Shock → ICU, Aggressive fluid resuscitation ± vasopressors.", type:"yes" },
+  { label:"Adjust antibiotic therapy according to blood & urine culture sensitivities", detail:"Afebrile for 48 hr → Switch to PO antibiotics and follow-up outpatient. No clinical improvement within 48 hr → Repeat renal imaging or MRI.", type:"terminal" }
+]},
+{ id:"a60", category:"MANAGEMENT", system:"Surgery", name:"Features of Angioedema", alt:"Angioedema Algorithm", desc:"Histamine vs bradykinin-mediated angioedema.", steps:[
+  { label:"Features of angioedema", detail:"Facial edema · Dyspnea, stridor · Urticaria.", type:"action" },
+  { label:"Stop potential triggers, Assess ABC", detail:"Initial management.", type:"action" },
+  { label:"Signs of airway compromise?", detail:"Yes → Call for help with airway management. Secure airway early. Once stable → Known hereditary angioedema? No → Treat as histamine-mediated. Yes → Treat as bradykinin-mediated.", type:"decision" },
+  { label:"Signs of anaphylaxis?", detail:"Yes → Give empiric IM epinephrine. If no improvement with repeated doses → Treat as bradykinin-mediated.", type:"decision" },
+  { label:"Known hereditary angioedema?", detail:"No → Histamine-mediated: IV antihistamines, IV glucocorticoids. No improvement → Bradykinin-mediated. Improvement → Continue as histamine-mediated. Yes → Bradykinin-mediated: C1-INH concentrate, Kallikrein inhibitor, Bradykinin-B2 receptor antagonist, FFP. Improvement → Continue as bradykinin-mediated.", type:"decision" }
+]},
+{ id:"a61", category:"MANAGEMENT", system:"Surgery", name:"Appendicitis Suspected", alt:"Appendicitis Algorithm", desc:"Scoring system-based diagnosis and management.", steps:[
+  { label:"Appendicitis suspected", detail:"Vague periumbilical pain → localized RLQ pain · McBurney point tenderness · Rovsing sign · Obturator/psoas sign.", type:"action" },
+  { label:"Hemodynamic instability and/or peritonitis/perforation?", detail:"Yes → Stabilize, consider upright CXR/abdominal XR, emergency consult for exploratory laparotomy. No → Supportive care and routine labs: NPO, IV fluids, analgesics, antiemetics, antipyretics. CBC, CRP, BMP, UA. β-hCG.", type:"decision" },
+  { label:"Assess likelihood of appendicitis", detail:"Clinical judgement and/or scoring systems (AIR, Alvarado, PAS).", type:"action" },
+  { label:"Low likelihood (AIR ≤ 4, Alvarado ≤ 4, PAS ≤ 3)", detail:"Consider in patient < 60 yr → Appendicitis unlikely. Patient > 60 yr → Obtain imaging.", type:"no" },
+  { label:"Moderate likelihood (AIR 5-8, Alvarado 5-6, PAS 4-6)", detail:"Obtain imaging. US vs CT depends on patient characteristics. CT abdomen with IV contrast OR Ultrasound abdomen.", type:"yes" },
+  { label:"High likelihood (AIR ≥ 9, Alvarado ≥ 7, PAS ≥ 7)", detail:"Some institutions skip imaging if high pretest probability. → Empiric IV antibiotics.", type:"decision" },
+  { label:"Imaging evidence of appendicitis?", detail:"No → Appendicitis unlikely. Inconclusive → Further assessment. Yes → Empiric IV antibiotics.", type:"action" },
+  { label:"Surgical consult", detail:"Uncomplicated: Emergency appendectomy OR Delayed appendectomy within 24 hr OR Nonoperative management. Complicated: Gangrenous → Sealed perforation. Inflammatory mass/phlegmon → Abscess < 4 cm. Abscess ≥ 4 cm OR < 4 cm & not improved → Drainage (Percutaneous or surgical). Nonoperative management → Failure → Interval appendectomy (6-8 wk).", type:"terminal" }
+]},
+{ id:"a62", category:"MANAGEMENT", system:"Surgery", name:"Adult Patient with Acute Abdominal Pain", alt:"Acute Abdomen Algorithm", desc:"Hemodynamic stability-based approach to acute abdominal pain.", steps:[
+  { label:"Adult patient with acute abdominal pain", detail:"Initial assessment.", type:"action" },
+  { label:"SBP ≥ 90 mm Hg (Hemodynamically stable)", detail:"Routine imaging normal? Elevated lactate → CTA abdomen once stabilized. ↑ Lipase ≥ 3x ULN → Acute pancreatitis. Cholestasis → Acute cholangitis. Abnormal US: Dilated aorta → Ruptured AAA. Free fluid → Ruptured ectopic (bHcg > 1500, no IUP). Abnormal x-rays: Air under diaphragm → Bowel perforation. Dilated bowel loops → Bowel obstruction.", type:"yes" },
+  { label:"SBP < 90 mm Hg (Hemodynamically unstable)", detail:"ABCDE assessment: A: Airway control. B: Monitor SpO₂ + O₂. C: Cardiac monitor, lactate, IV fluids. D: Identify source of instability. E: Focused H&P. Peritoneal signs → Upright CXR & surgery consult. Persistent instability → ICU consult.", type:"no" },
+  { label:"Abdominal cause suspected", detail:"Rapid bedside testing: US abdomen/pelvis, X-rays AXR/Upright CXR, LFTs and Lipase.", type:"action" },
+  { label:"Thoracic cause suspected", detail:"Rapid bedside testing: ECG, Cardiac markers, CXR.", type:"action" },
+  { label:"Life-threatening conditions suspected", detail:"IV analgesia, Focused H&P, Labs and initial bedside testing, +/- CT abdomen. Life-threatening unlikely → Refer to 'Non-life-threatening' flowchart.", type:"terminal" }
+]},
+{ id:"a63", category:"MANAGEMENT", system:"Surgery", name:"Adult Patient with Abdominal Pain (Non-Life-Threatening)", alt:"Non-Emergent Abdominal Pain", desc:"Localized vs diffuse abdominal pain algorithm.", steps:[
+  { label:"Adult patient with abdominal pain", detail:"Initial assessment.", type:"action" },
+  { label:"Hemodynamic instability and/or peritoneal signs?", detail:"Yes → Refer to life-threatening causes flowchart. No → Is pain localized or diffuse?", type:"decision" },
+  { label:"Localized", detail:"RUQ, LUQ, Epigastric, RLQ, LLQ.", type:"no" },
+  { label:"Diffuse", detail:"Stable, nonspecific pain in young person without red flags? Yes → IBS, Gastroenteritis. No → Consider labs, abdominal XR, CT + IV contrast, colonoscopy → IBD, Celiac disease.", type:"yes" },
+  { label:"RUQ", detail:"LFTs, amylase, lipase. Normal → RUQ US → Biliary colic, Cholecystitis. ↑ LFTs → Hepatitis panel & RUQ US. ↑ Amylase and lipase > 3x ULN → Acute pancreatitis.", type:"action" },
+  { label:"LUQ", detail:"US, CT + IV contrast, CXR → Splenic pathology, Lower lobe pneumonia.", type:"action" },
+  { label:"Epigastric", detail:"Amylase, lipase. Normal → GERD, Gastritis, PUD.", type:"action" },
+  { label:"RLQ", detail:"US, CT + IV contrast, CTA. Consider in female sex/reproductive organs → Pelvic exam & pelvic US (+/- TVUS).", type:"action" },
+  { label:"LLQ", detail:"US, CT + IV contrast, CTA.", type:"action" }
+]},
+{ id:"a64", category:"MANAGEMENT", system:"Surgery", name:"Cholelithiasis Symptoms", alt:"Cholelithiasis Algorithm", desc:"Risk-based management of suspected choledocholithiasis.", steps:[
+  { label:"Symptoms of cholelithiasis", detail:"RUQ pain, biliary colic.", type:"action" },
+  { label:"Right upper quadrant ultrasound", detail:"Cholelithiasis present? No → Consider alternate diagnosis. Yes → Assess predictors of concurrent choledocholithiasis.", type:"action" },
+  { label:"Predictors of choledocholithiasis", detail:"Moderate: Abnormal LFTs, Age > 55, Clinical signs of gallstone pancreatitis. Strong: Dilated CBD > 6mm, Bilirubin 1.8-4 mg/dL. Very strong: CBD stone visualized, Clinical signs of acute cholangitis, Bilirubin > 4 mg/dL.", type:"action" },
+  { label:"Determine risk of choledocholithiasis", detail:"Low (no predictors) → Cholecystectomy. Intermediate → Laparoscopy with US/cholangiography OR Pre-op EUS/MRCP. Stone in CBD → Pre-op ERCP. No stone → Cholecystectomy. High (1 very strong or 2 strong predictors) → Pre-op ERCP. Stone in CBD → Pre-op ERCP. No stone → Interval elective cholecystectomy.", type:"action" }
+]},
+{ id:"a65", category:"MANAGEMENT", system:"Surgery", name:"Symptoms of Hemorrhoids", alt:"Hemorrhoids Algorithm", desc:"External vs internal hemorrhoid management.", steps:[
+  { label:"Symptoms of hemorrhoids", detail:"Bright red bleeding, pruritus.", type:"action" },
+  { label:"Perianal inspection and digital rectal examination", detail:"Inconclusive → Anoscopy ± proctoscopy. Signs of malignancy → Flexible sigmoidoscopy, colonoscopy, or barium enema. Below dentate line (sometimes painful) → External hemorrhoids. Above dentate line (generally painless) → Internal hemorrhoids.", type:"action" },
+  { label:"External hemorrhoids", detail:"Conservative: Lifestyle modifications, Stool softeners, Sitz baths. Persistent → Surgical: Arterial ligation, Hemorrhoidectomy, Hemorrhoidopexy.", type:"action" },
+  { label:"Internal hemorrhoids", detail:"Not prolapsed (I), reduce at rest (II) → Conservative. Manually reducible (III) → Nonsurgical outpatient: Rubber band ligation, Sclerotherapy, Infrared coagulation. Irreducible prolapse, thrombosis (IV) → Surgical: Arterial ligation, Hemorrhoidectomy, Hemorrhoidopexy.", type:"action" }
+]},
+{ id:"a66", category:"MANAGEMENT", system:"Toxicology", name:"Foreign Body (FB) Aspiration", alt:"FB Aspiration Algorithm", desc:"Complete vs partial airway obstruction management.", steps:[
+  { label:"Foreign body (FB) aspiration", detail:"Suspected or witnessed.", type:"action" },
+  { label:"Signs of complete airway obstruction?", detail:"Inability to speak, cry, or cough · Inaudible breath sounds · Paradoxical chest/abdomen movement · Loss of consciousness, cyanosis.", type:"decision" },
+  { label:"Yes → Complete airway obstruction", detail:"Responsive? No → Start CPR. Failure to dislodge → Emergency airway: Laryngoscopy-guided OR, Surgical airway. Yes → Back blows. Failure → Age group? Infant → Chest thrusts. Adults & children > 1 → Abdominal thrusts.", type:"yes" },
+  { label:"No → Partial airway obstruction", detail:"Upper airway (Stridor, Sternal retraction, Accessory muscles, Difficulty swallowing, Drooling) → Neck X-ray. No FB → Laryngoscopy or nasal endoscopy. FB → Encourage coughing. Failure → Planned removal with laryngoscopy or nasal endoscopy. Lower airway (Cough, Absent breath sounds, Wheezing) → Chest X-ray. Yes → Encourage coughing. Failure → Planned removal with bronchoscopy. No → CT chest or bronchoscopy.", type:"no" }
+]},
+{ id:"a67", category:"MANAGEMENT", system:"Critical Care", name:"Mechanical Ventilation — Troubleshooting", alt:"Ventilator Troubleshooting", desc:"DOPE mnemonic-based troubleshooting for ventilated patients.", steps:[
+  { label:"Respiratory distress in mechanically ventilated patient", detail:"Imminent cardiorespiratory collapse? Yes → Disconnect from ventilator & manually ventilate with 100% FiO₂. Review DOPE mnemonic. Relatively stable → Check alarms & monitors, check tubing & equipment, order tests.", type:"action" },
+  { label:"DOPE mnemonic", detail:"Displacement/disconnection → Reconnect, laryngoscopy, reposition/reintubate. Obstruction → Reposition, suction, consider bite block. Pneumothorax → Chest tube. Equipment failure → Continue manual ventilation.", type:"action" },
+  { label:"Increase FiO₂ to 100%", detail:"Focused H&P to determine cause.", type:"action" },
+  { label:"Hemodynamic compromise", detail:"Treat underlying condition + optimize fluids and pressors. DHI present? No → Decrease PEEP as tolerated. Yes → Restart with: ↓ Vt/RR/I:E ratio, ↑ Inspiratory flow rate.", type:"action" },
+  { label:"Dynamic hyperinflation (DHI)", detail:"Disconnect from ventilator; manually decompress chest.", type:"action" },
+  { label:"Patient-ventilator dyssynchrony", detail:"Patient-related → Treat underlying disorder, optimize sedation. Ventilator-related → Expert consult, adjust mode/parameters.", type:"action" },
+  { label:"Ventilation issue", detail:"Mandatory mode (AC-VCV) → Adjust minute ventilation. Spontaneous mode (PSV) → Treat underlying, add inspiratory support, reduce sedation, change to mandatory mode.", type:"action" },
+  { label:"Oxygenation issue", detail:"Treat underlying reversible causes. Adjust FiO₂ and PEEP. Consider lung recruitment maneuvers.", type:"action" }
+]},
+{ id:"a68", category:"RESUSCITATION", system:"Critical Care", name:"Conditions Necessitating Mechanical Ventilation", alt:"Mechanical Ventilation Indications", desc:"Normal lung mechanics, hypoxemic, and hypercapnic respiratory failure.", steps:[
+  { label:"Conditions necessitating mechanical ventilation", detail:"Decision point.", type:"decision" },
+  { label:"Normal lung mechanics", detail:"Airway protection · Hemodynamic compromise. Prior to intubation: Optimize hemodynamics with fluids and vasopressor infusions · Consider pretreatment with push-dose vasopressors · Use induction agent with stable CV response (etomidate).", type:"yes" },
+  { label:"Hypoxemic respiratory failure", detail:"Cardiogenic pulmonary edema → IV furosemide, IV nitroglycerin, rate control if Afib with RVR → Trial NIPPV → Inadequate response → Intubate. Pneumonia (without ARDS) → Consider NIPPV (limited evidence). ARDS → Consider NIPPV (only in mild cases) → Intubate.", type:"no" },
+  { label:"Hypercapnic respiratory failure", detail:"Neuromuscular weakness and chest wall injury → Trial NIPPV → Inadequate response → Intubate. Acidosis (DKA, salicylate toxicity, AECOPD) → Consider trial NIPPV → Pretreatment with IV bicarbonate. Obstructive lung disease → Indications for urgent intubation? (Cardiac arrest, Respiratory arrest, Physical exhaustion, Altered mental status). Yes → Intubate. No → Maximize medical therapy → NIPPV → Inadequate response → Intubate.", type:"decision" },
+  { label:"Intubate", detail:"Mode: AC-VCV/PCV/PRVC. Vt: 8-10 mL/kg, RR 10-15/min, FiO₂ 100% → < 40%, PEEP 3-5 cm H₂O. If ARDS → LPV: Vt 6-8 mL/kg, RR 20-35/min, PEEP 5 cm H₂O. Consider prone positioning, recruitment maneuvers, neuromuscular blockade.", type:"terminal" }
+]},
+{ id:"a69", category:"MANAGEMENT", system:"Dermatology", name:"Signs of Skin or Soft Tissue Infection", alt:"SSTI Algorithm", desc:"Nonpurulent vs purulent SSTI management.", steps:[
+  { label:"Signs of skin or soft tissue infection", detail:"Redness, heat, swelling, pain, loss of function.", type:"action" },
+  { label:"Signs of necrotizing infection?", detail:"Rapid deterioration or shock · Progressive infection with necrosis · Bullae · Purple skin discoloration. Yes → Emergency surgical debridement + cultures + sensitivities. Empiric IV antibiotics: Daptomycin, linezolid, or vancomycin PLUS A carbapenem, piperacillin/tazobactam, FQ + metronidazole, or ceftriaxone + metronidazole.", type:"decision" },
+  { label:"Condition requires specialized tx?", detail:"Bite wound · Orbital cellulitis · Complex abscess · Device/prosthetics-related. Yes → Specialist consult.", type:"decision" },
+  { label:"Nonpurulent vs Purulent infections", detail:"Determine severity: Exam, labs (CBC, BMP, CRP, calcitonin), ± imaging.", type:"decision" },
+  { label:"Mild SSTI (Locally confined)", detail:"Oral antibiotics: Penicillin VK, cephalexin, dicloxacillin, or clindamycin. Incision + drainage usually sufficient. Consider topical antibiotics.", type:"no" },
+  { label:"Moderate SSTI (Systemic symptoms)", detail:"IV antibiotics: Penicillin, ceftriaxone, cefazolin, or clindamycin. Incision + drainage with culture + sensitivity. Oral/IV antibiotics: TMP/SMX or doxycycline.", type:"yes" },
+  { label:"Severe SSTI", detail:"SIRS · Features of deep tissue infection · Any necrotizing infection · Organ failure · Immunocompromised · Failed initial treatment. Surgical debridement with culture + sensitivity. IV antibiotics: Vancomycin PLUS pip/tazo or meropenem. Incision + drainage with culture + sensitivity. IV: Vancomycin, daptomycin, linezolid, telavancin, or ceftaroline.", type:"decision" },
+  { label:"Adapt antibiotic treatment to culture and sensitivity results", detail:"Evaluate and treat risk factors to prevent recurrent infection.", type:"terminal" }
+]},
+{ id:"a70", category:"DIAGNOSIS", system:"Hematology", name:"Suspected Hypercalcemia", alt:"Hypercalcemia Algorithm", desc:"PTH and PTHrP-based differentiation of hypercalcemia.", steps:[
+  { label:"↑ Serum calcium (incidental finding or suspected hypercalcemia)", detail:"Confirm hypercalcemia.", type:"action" },
+  { label:"Order ionized Ca²⁺ or calculate Ca²⁺ corrected for serum albumin", detail:"Decision point.", type:"decision" },
+  { label:"Normal Ca²⁺ → Remeasure after discontinuing interfering medications", detail:"Repeat testing.", type:"no" },
+  { label:"↑ Ca²⁺ → Confirmed hypercalcemia", detail:"Check PTH.", type:"yes" },
+  { label:"↑ PTH (+ ↓ Phosphate) → Primary hyperparathyroidism", detail:"Parathyroidectomy if indicated.", type:"yes" },
+  { label:"↔/↑ PTH → Urine Ca²⁺", detail:"Decision point.", type:"decision" },
+  { label:"↔/↑ Ca²⁺ → Familial hypocalciuric hypercalcemia", detail:"Usually no treatment needed.", type:"yes" },
+  { label:"↓ Ca²⁺ → Hypercalcemia of malignancy", detail:"Treat underlying malignancy.", type:"no" },
+  { label:"↓ PTH → PTHrP, Calcidiol and Calcitriol", detail:"Decision point.", type:"no" },
+  { label:"↑ PTHrP → Hypercalcemia of malignancy", detail:"Treat underlying malignancy.", type:"yes" },
+  { label:"↑ Calcitriol → Granulomatous diseases (sarcoidosis) or lymphoma", detail:"Treat underlying disease.", type:"decision" },
+  { label:"↑ Calcidiol → Vitamin D intoxication", detail:"Stop vitamin D.", type:"terminal" },
+  { label:"Vit. D metabolites, ↔ PTHrP → Consider other causes", detail:"Further workup.", type:"terminal" }
+]},
+{ id:"a71", category:"DIAGNOSIS", system:"Endocrine", name:"Diagnosis of Hypocalcemia", alt:"Hypocalcemia Algorithm", desc:"PTH-based differentiation of hypocalcemia causes.", steps:[
+  { label:"Serum calcium < 8.5 mg/dL", detail:"Confirm hypocalcemia.", type:"action" },
+  { label:"Either: Order ionized Ca²⁺ or Calculate Ca²⁺ corrected for albumin", detail:"Decision point.", type:"decision" },
+  { label:"Normal Ca²⁺ → Factitious hypocalcemia", detail:"No treatment needed.", type:"no" },
+  { label:"↓ Ca²⁺ → Confirmed hypocalcemia", detail:"Discontinue any medications that can cause hypocalcemia.", type:"yes" },
+  { label:"Measure PTH", detail:"Decision point.", type:"decision" },
+  { label:"Normal or ↓ PTH → Hypoparathyroidism", detail:"Treat with calcium and vitamin D.", type:"no" },
+  { label:"↑ PTH → Measure phosphate, magnesium, calcidiol, and creatinine", detail:"Decision point.", type:"yes" },
+  { label:"↓ Or normal phosphate + ↓ Calcidiol → Vitamin D deficiency", detail:"Treat with vitamin D.", type:"no" },
+  { label:"↑ Phosphate + ↑ Creatinine → Chronic kidney disease", detail:"Treat CKD.", type:"yes" },
+  { label:"↑ Phosphate → Pseudohypoparathyroidism", detail:"Treat with calcium and vitamin D.", type:"decision" },
+  { label:"↓ Magnesium → Either: Malabsorption · Alcohol use disorder", detail:"Correct magnesium.", type:"terminal" }
+]},
+{ id:"a72", category:"ACID_BASE", system:"Nephrology", name:"Acid-Base Disorder Evaluation Algorithm", alt:"Acid-Base Algorithm", desc:"pH and PCO₂/HCO₃⁻ based diagnosis of acid-base disorders.", steps:[
+  { label:"Evaluate pH", detail:"Decision point.", type:"decision" },
+  { label:"< 7.35 → Acidosis", detail:"Assess PCO₂ and HCO₃⁻.", type:"no" },
+  { label:"> 7.45 → Alkalosis", detail:"Assess PCO₂ and HCO₃⁻.", type:"yes" },
+  { label:"↑ PCO₂ → Respiratory acidosis", detail:"Metabolic compensation (↑ HCO₃⁻).", type:"no" },
+  { label:"↓ HCO₃⁻ → Metabolic acidosis", detail:"Respiratory compensation (↓ PCO₂).", type:"yes" },
+  { label:"↓ PCO₂ → Respiratory alkalosis", detail:"Metabolic compensation (↓ HCO₃⁻).", type:"no" },
+  { label:"↑ HCO₃⁻ → Metabolic alkalosis", detail:"Respiratory compensation (↑ PCO₂).", type:"yes" },
+  { label:"Calculate anion gap", detail:"Decision point.", type:"decision" },
+  { label:"↑ Anion gap → High anion gap metabolic acidosis", detail:"MUDPILES: Methanol, Uremia, DKA, Paraldehyde, INH, Lactate, Ethylene glycol, Salicylates.", type:"yes" },
+  { label:"Normal anion gap → Normal anion gap metabolic acidosis", detail:"FUSEDCARS: Fistula, Ureteroenterostomy, Saline infusion, Endocrine (Addison's, hyperparathyroidism), Diarrhea, Carbonic anhydrase inhibitors, Ammonium chloride, Renal tubular acidosis, Spironolactone.", type:"no" }
+]},
+{ id:"a73", category:"MANAGEMENT", system:"Pediatrics", name:"Bilious Vomiting in an Infant", alt:"Bilious Vomiting Algorithm", desc:"Imaging-based diagnosis of intestinal obstruction.", steps:[
+  { label:"Bilious vomiting in an infant", detail:"Possible intestinal obstruction.", type:"action" },
+  { label:"Initial management", detail:"NPO · NG or OG tube placement · IV fluids · Correct electrolytes.", type:"action" },
+  { label:"Hemodynamically unstable or signs of peritonitis?", detail:"Fever, guarding, rebound tenderness.", type:"decision" },
+  { label:"Yes → IV antibiotics + emergency surgery", detail:"Resuscitate and operate.", type:"yes" },
+  { label:"No → Abdominal X-ray", detail:"Decision point.", type:"no" },
+  { label:"Pneumoperitoneum (Rigler sign)", detail:"Bowel perforation → IV antibiotics + emergency surgery.", type:"terminal" },
+  { label:"Dilated loops of bowel", detail:"Contrast enema. Microcolon → Meconium ileus. Rectosigmoid transition zone → Hirschsprung disease.", type:"terminal" },
+  { label:"'Double-bubble' sign", detail:"Duodenal atresia → Refer to duodenal atresia article.", type:"terminal" },
+  { label:"NG tube misplaced + right-sided jejunal markings + absent stool in RLQ", detail:"Upper GI contrast study. Abnormal duodenal junction + corkscrew appearance → Malrotation with midgut volvulus.", type:"terminal" },
+  { label:"Pneumatosis, portal venous gas", detail:"Necrotizing enterocolitis → Refer to NEC article.", type:"terminal" }
+]},
+{ id:"a74", category:"MANAGEMENT", system:"Pediatrics", name:"Postresuscitation Care", alt:"Post-Cardiac Arrest Care", desc:"Post-resuscitation stabilization and management.", steps:[
+  { label:"Postresuscitation care", detail:"Initial stabilization.", type:"action" },
+  { label:"Manage airway, breathing, circulation", detail:"Target parameters: SpO₂ 90-98% · PaCO₂ 35-45 mm Hg · MAP > 65 mm Hg.", type:"action" },
+  { label:"Obtain 12-lead ECG", detail:"Decision point.", type:"decision" },
+  { label:"Acute ST elevation?", detail:"Yes → Urgent PCI. No → Continue postresuscitation care.", type:"yes" },
+  { label:"Identify and treat underlying causes and complications", detail:"Consider POCUS, bedside ECHO, and/or whole-body CT.", type:"action" },
+  { label:"Assess patient off sedation and neuromuscular blockade", detail:"Decision point.", type:"decision" },
+  { label:"Unable to follow commands and/or myoclonus", detail:"Perform EEG. Seizure activity → Consider antiepileptic treatment. No seizure → Ongoing critical care: Temperature control (32-37.5°C), Neuroprotective measures, Neuroprognostication.", type:"no" },
+  { label:"Able to follow commands", detail:"Ongoing critical care as required. E.g., PCI before hospital discharge.", type:"yes" }
+]},
+{ id:"a75", category:"MANAGEMENT", system:"Infectious Disease", name:"Treatment of Community-Acquired Pneumonia (CAP)", alt:"CAP Algorithm", desc:"PSI/CURB-65 based outpatient vs inpatient management.", steps:[
+  { label:"Treatment of community-acquired pneumonia (CAP)", detail:"Calculate PSI or CURB-65 score to assess need for hospitalization.", type:"action" },
+  { label:"PSI ≤ 70, CURB-65 ≤ 1 → Outpatient treatment", detail:"Comorbidities or risk factors for resistant pathogens? No → Monotherapy: Amoxicillin, Doxycycline, Macrolide. Yes → Combination therapy: β-lactam + macrolide OR respiratory fluoroquinolone.", type:"yes" },
+  { label:"PSI > 90, CURB-65 ≥ 2 → Inpatient treatment", detail:"Suspected pseudomonas? Yes → Antipseudomonal β-lactam IV. No → Hypotension OR respiratory failure? No → Severe CAP criteria? No → Non-ICU: β-lactam IV + Azithro/Clarithro/Doxy. Yes → ICU. Yes → ICU.", type:"no" },
+  { label:"Suspected MRSA involvement?", detail:"Previous MRSA in sputum, severe CAP with recent hospitalization, IV antibiotics in past 90 days. Yes → Add anti-MRSA therapy: Vancomycin IV or linezolid PO.", type:"decision" }
+]},
+{ id:"a76", category:"DIAGNOSIS", system:"Infectious Disease", name:"Serological Testing Algorithm for Syphilis", alt:"Syphilis Serology Algorithm", desc:"Standard vs reverse algorithm for syphilis testing.", steps:[
+  { label:"Either: Features of syphilis · Candidate for screening", detail:"Choice depends on local laboratory.", type:"action" },
+  { label:"Standard algorithm", detail:"First test: NTT. Positive → TT. Negative → Assess risk status.", type:"no" },
+  { label:"Reverse algorithm", detail:"First test: TT. Negative → Assess risk status. Positive → NTT. Negative → Perform different TT. Positive → Current or past syphilis likely.", type:"yes" },
+  { label:"Assess risk status", detail:"Low → Syphilis unlikely, no further testing. High → Early primary syphilis cannot be excluded. Presumptive treatment, retest after 2-4 weeks.", type:"decision" },
+  { label:"Current or past syphilis likely", detail:"Positive NTT and TT. Treat as syphilis.", type:"terminal" },
+  { label:"First test likely false positive", detail:"Negative NTT and TT. Repeat testing after 2-4 weeks in patients with risk factors.", type:"terminal" }
+]},
+{ id:"a77", category:"MANAGEMENT", system:"Infectious Disease", name:"Management of Lyme Disease", alt:"Lyme Disease Algorithm", desc:"Erythema migrans and serology-based management.", steps:[
+  { label:"Confirmed or possible tick bite", detail:"Initial assessment.", type:"action" },
+  { label:"Erythema migrans?", detail:"Decision point.", type:"decision" },
+  { label:"Yes → Antibiotic treatment", detail:"Doxycycline, amoxicillin, or cefuroxime.", type:"yes" },
+  { label:"No → Symptoms of early or late disseminated Lyme disease?", detail:"Decision point.", type:"no" },
+  { label:"Yes → Serological testing", detail:"Positive → Antibiotic treatment. Negative → Consider other causes.", type:"yes" },
+  { label:"No → Criteria met for Lyme disease PEP?", detail:"Decision point.", type:"no" },
+  { label:"Yes → PEP for Lyme disease", detail:"Single dose of doxycycline 200 mg.", type:"yes" },
+  { label:"No → Lyme disease unlikely", detail:"No treatment needed.", type:"no" }
+]},
+{ id:"a78", category:"MANAGEMENT", system:"Infectious Disease", name:"Pharmacotherapy for the Agitated or Violent Patient", alt:"Agitation Algorithm", desc:"Etiology-based pharmacotherapy for agitation.", steps:[
+  { label:"Medications for agitation indicated", detail:"Patient is a clear danger to self or other and unresponsive to nonpharmacological methods.", type:"action" },
+  { label:"Treat critical or easily reversible causes first or concurrently", detail:"Hypoxia, shock, hypoglycemia, pain, seizure, acute urinary retention.", type:"action" },
+  { label:"Very severe agitation or violent behavior?", detail:"Decision point.", type:"decision" },
+  { label:"Yes → Consider: Antipsychotics PLUS benzodiazepines · Ketamine", detail:"Rapid tranquilization.", type:"yes" },
+  { label:"No → Etiology-based treatment", detail:"Delirium or psychotic disorder → Antipsychotics PLUS BZDs · Ketamine. Unknown history → Psychosis? Yes → 2nd-gen antipsychotic (olanzapine, risperidone). No → Benzodiazepine (lorazepam, midazolam). CNS stimulant intoxication or depressant withdrawal → Benzodiazepine. CNS depressant intoxication → 1st-gen antipsychotic (haloperidol).", type:"no" },
+  { label:"Safe approach to pharmacotherapy", detail:"Start at lowest possible dose (reduce for older adults) · Monitor for oversedation, hemodynamic instability, respiratory compromise · Repeat only if necessary.", type:"action" },
+  { label:"Refractory agitation?", detail:"Yes → Reassess and consider alternative agents. No → Discontinue medication as soon as possible.", type:"decision" }
+]},
+{ id:"a79", category:"DIAGNOSIS", system:"Endocrine", name:"Suspected Adrenal Insufficiency (AI)", alt:"Adrenal Insufficiency Algorithm", desc:"Cortisol and ACTH-based diagnosis of adrenal insufficiency.", steps:[
+  { label:"Suspected adrenal insufficiency (AI)", detail:"Fatigue, weakness, hyperpigmentation, salt and/or sugar craving.", type:"action" },
+  { label:"Signs of adrenal crisis?", detail:"Refractory hypotension, impaired consciousness, severe abdominal pain, vomiting.", type:"decision" },
+  { label:"Yes → Start empiric management", detail:"Hydrocortisone 100 mg IV · Fluid resuscitation · Treat hypoglycemia · Defer testing until stable.", type:"yes" },
+  { label:"No → Measure morning cortisol", detail:"Decision point.", type:"no" },
+  { label:"Low cortisol → Obtain morning ACTH and perform ACTH stimulation test", detail:"Measure cortisol rise.", type:"no" },
+  { label:"High cortisol (≥ 18 mcg/dL) → Consider alternative diagnoses", detail:"Rule out other causes.", type:"yes" },
+  { label:"↑ ACTH → Primary AI", detail:"High morning ACTH PLUS no rise after stimulation. Level of defect: adrenal glands. Screen for hypoaldosteronism and hypoandrogenism. Measure 21-hydroxylase antibodies. Negative → Consider other causes. Positive → Autoimmune AI: screen for autoimmune polyendocrine syndrome.", type:"yes" },
+  { label:"↓ ACTH → Secondary or tertiary AI", detail:"Low morning ACTH PLUS significant rise after stimulation. Level of defect: pituitary (secondary) or hypothalamus (tertiary). MRI pituitary. Lesion detected → Treat. No lesion → Consider other causes.", type:"no" }
+]},
+{ id:"a80", category:"DIAGNOSIS", system:"Endocrine", name:"Evaluation of Hyperthyroidism", alt:"Hyperthyroidism Algorithm", desc:"TSH, free T4, and T3 based diagnosis of hyperthyroidism.", steps:[
+  { label:"Hyperthyroidism suspected", detail:"Measure TSH, free T4, and total T3 levels.", type:"action" },
+  { label:"↑ Or normal TSH + ↑ Free T4 + ↑ Total T3", detail:"Thyrotropic adenoma likely. MRI pituitary gland.", type:"yes" },
+  { label:"↓ TSH + ↑ Free T4 + ↑ Total T3", detail:"Overt hyperthyroidism.", type:"no" },
+  { label:"↓ TSH + Normal free T4 + Normal total T3", detail:"Measure β-hCG. Negative → Subclinical hyperthyroidism. Positive → Consider β-hCG-associated hyperthyroidism.", type:"decision" },
+  { label:"Normal TSH + Normal free T4 + Normal total T3", detail:"Hyperthyroidism unlikely.", type:"terminal" },
+  { label:"Diagnostic criteria met for Graves disease?", detail:"Decision point.", type:"decision" },
+  { label:"Yes → High suspicion for Graves?", detail:"Check TRAb. Positive → Graves disease. Negative → Thyroid imaging.", type:"yes" },
+  { label:"No → Thyroid imaging", detail:"Nuclear medicine thyroid scan · Radioactive iodine uptake · If unavailable, consider ultrasound with Doppler.", type:"no" },
+  { label:"High uptake", detail:"Diffuse pattern → Graves. Nodular: One or two areas → Toxic adenoma. Multiple areas → Toxic multinodular goiter.", type:"yes" },
+  { label:"Low uptake", detail:"Check anti-TPOAb and/or anti-TGAb. Positive → Hashitoxicosis. Negative → Measure thyroglobulin. High or normal → Endogenous hyperthyroidism. Low → Exogenous hyperthyroidism.", type:"no" }
+]},
+{ id:"a81", category:"DIAGNOSIS", system:"Endocrine", name:"Evaluation of Thyroid Nodule", alt:"Thyroid Nodule Algorithm", desc:"TSH, scintigraphy, and FNA-based evaluation.", steps:[
+  { label:"Thyroid nodule", detail:"Initial evaluation: History and physical examination · TSH · Ultrasound of the neck.", type:"action" },
+  { label:"TSH low", detail:"Thyroid scintigraphy. Hot nodule → Evaluate for hyperthyroidism. Cold nodule → Indications for fine needle aspiration?", type:"no" },
+  { label:"TSH normal or elevated", detail:"Indications for fine needle aspiration?", type:"yes" },
+  { label:"Indications for FNA?", detail:"Yes → Fine needle aspiration → Cytology. No → Monitor with thyroid ultrasound.", type:"decision" }
+]},
+{ id:"a82", category:"MANAGEMENT", system:"Gastroenterology", name:"Suspected GERD", alt:"GERD Algorithm", desc:"Symptom-based evaluation of GERD.", steps:[
+  { label:"Suspected GERD", detail:"Either: Atypical symptoms · Typical symptoms · Extraesophageal symptoms.", type:"action" },
+  { label:"Chest pain?", detail:"Yes → Exclude cardiac cause (ECG, troponin). No → Alarm symptoms? (Dysphagia, odynophagia, early satiety, anemia, GI bleed, persistent vomiting, unintentional weight loss, aspiration pneumonia).", type:"decision" },
+  { label:"Alarm symptoms?", detail:"Yes → Upper GI endoscopy. No → High risk for Barrett esophagus? (Male, European descent, age ≥ 50, obese, symptoms ≥ 5 years).", type:"decision" },
+  { label:"High risk for Barrett esophagus?", detail:"Yes → Upper GI endoscopy. No → Empiric therapy: PPI for 8 weeks + Lifestyle modifications.", type:"decision" },
+  { label:"Empiric therapy response", detail:"Improvement → Assumed GERD. No response → Consider further diagnostic evaluation. Partial → Optimize PPI therapy.", type:"action" },
+  { label:"Upper GI endoscopy", detail:"Normal → Esophageal pH monitoring (if suspected NERD). Abnormal → NERD or ERD.", type:"action" },
+  { label:"Esophageal pH monitoring", detail:"Abnormal pH → NERD or ERD. Normal pH → Consider further diagnostic evaluation.", type:"action" }
+]},
+{ id:"a83", category:"ACID_BASE", system:"Nephrology", name:"Acid-Base Disorder Evaluation Algorithm", alt:"Acid-Base Algorithm", desc:"pH and PCO₂/HCO₃⁻ based diagnosis of acid-base disorders.", steps:[
+  { label:"Evaluate pH", detail:"Decision point.", type:"decision" },
+  { label:"< 7.35 → Acidosis", detail:"Assess PCO₂ and HCO₃⁻.", type:"no" },
+  { label:"> 7.45 → Alkalosis", detail:"Assess PCO₂ and HCO₃⁻.", type:"yes" },
+  { label:"↑ PCO₂ → Respiratory acidosis", detail:"Metabolic compensation (↑ HCO₃⁻).", type:"no" },
+  { label:"↓ HCO₃⁻ → Metabolic acidosis", detail:"Respiratory compensation (↓ PCO₂).", type:"yes" },
+  { label:"↓ PCO₂ → Respiratory alkalosis", detail:"Metabolic compensation (↓ HCO₃⁻).", type:"no" },
+  { label:"↑ HCO₃⁻ → Metabolic alkalosis", detail:"Respiratory compensation (↑ PCO₂).", type:"yes" },
+  { label:"Calculate anion gap", detail:"Decision point.", type:"decision" },
+  { label:"↑ Anion gap → HAGMA", detail:"MUDPILES: Methanol, Uremia, DKA, Paraldehyde, INH, Lactate, Ethylene glycol, Salicylates.", type:"yes" },
+  { label:"Normal anion gap → NAGMA", detail:"FUSEDCARS: Fistula, Ureteroenterostomy, Saline infusion, Endocrine, Diarrhea, Carbonic anhydrase inhibitors, Ammonium chloride, RTA, Spironolactone.", type:"no" }
+]},
+{ id:"a84", category:"MANAGEMENT", system:"Nephrology", name:"Management of Hypokalemia", alt:"Hypokalemia Algorithm", desc:"Severity-based management of hypokalemia.", steps:[
+  { label:"Serum potassium < 3.5 mEq/L", detail:"Confirm hypokalemia.", type:"action" },
+  { label:"Initial evaluation", detail:"BMP including calcium · Serum magnesium, phosphate · ABG or VBG · ECG · Consider measuring urinary potassium.", type:"action" },
+  { label:"Symptomatic hypokalemia?", detail:"Decision point.", type:"decision" },
+  { label:"Yes → IV potassium chloride PLUS oral repletion if tolerated", detail:"Continuous cardiac monitoring · Repeat K+ every 2-4 hours · Consider ICU admission.", type:"yes" },
+  { label:"No → Assess severity", detail:"Decision point.", type:"no" },
+  { label:"Mild (3.0-3.4)", detail:"Consider oral potassium chloride.", type:"no" },
+  { label:"Moderate (2.5-2.9)", detail:"Oral potassium chloride repletion.", type:"yes" },
+  { label:"Severe (< 2.5) and/or high risk of recurrent severe hypokalemia", detail:"IV potassium chloride PLUS oral repletion if tolerated.", type:"decision" },
+  { label:"Further management", detail:"Assess and treat underlying cause · Specialist consult · Correct cautiously in impaired renal function.", type:"terminal" }
+]},
+{ id:"a85", category:"DIAGNOSIS", system:"Nephrology", name:"Diagnosis of Hypernatremia", alt:"Hypernatremia Algorithm", desc:"Volume status and urine osmolality based diagnosis.", steps:[
+  { label:"Serum sodium > 145 mEq/L", detail:"Confirm hypernatremia.", type:"action" },
+  { label:"Clinical evaluation to determine etiology", detail:"Decision point.", type:"decision" },
+  { label:"Etiology clear", detail:"Treat underlying cause.", type:"yes" },
+  { label:"Features of Cushing syndrome or primary hyperaldosteronism", detail:"Treat underlying cause.", type:"no" },
+  { label:"Etiology unclear → Check urine osmolality", detail:"Decision point.", type:"decision" },
+  { label:"> 600 mOsmol/kg → Implies extrarenal mechanism", detail:"Assess volume status.", type:"yes" },
+  { label:"≤ 600 mOsmol/kg → Implies renal mechanism", detail:"Assess volume status.", type:"no" },
+  { label:"Hypovolemic (extrarenal)", detail:"GI or skin loss.", type:"no" },
+  { label:"Euvolemic (extrarenal)", detail:"Impaired thirst or lack of access to water.", type:"yes" },
+  { label:"Hypervolemic (extrarenal)", detail:"Iatrogenic or ingestion.", type:"decision" },
+  { label:"Hypovolemic (renal)", detail:"Diuretics or osmotic diuresis.", type:"no" },
+  { label:"Euvolemic (renal)", detail:"Arginine vasopressin disorders.", type:"yes" },
+  { label:"Hypervolemic (renal)", detail:"Either: Primary hyperaldosteronism · Cushing syndrome.", type:"decision" }
+]},
+{ id:"a86", category:"DIAGNOSIS", system:"Endocrine", name:"Suspected Arginine Vasopressin Disorder", alt:"Diabetes Insipidus Algorithm", desc:"Water deprivation test and copeptin-based diagnosis.", steps:[
+  { label:"Suspected AVP disorder", detail:"Initial evaluation.", type:"action" },
+  { label:"Initial evaluation", detail:"Plasma osmolality (POsm), BMP · Urinalysis · 24-hour urine collection: volume and UOsm.", type:"action" },
+  { label:"High serum Na⁺ and/or POsm + Low UOsm → AVP disorder likely", detail:"Proceed to water deprivation test or plasma copeptin testing.", type:"yes" },
+  { label:"Normal serum Na⁺ and POsm + Low UOsm → Diagnosis unclear", detail:"Proceed to water deprivation test or plasma copeptin testing.", type:"no" },
+  { label:"Low serum Na⁺ and/or POsm + Very low UOsm → Primary polydipsia likely", detail:"Proceed to water deprivation test or plasma copeptin testing.", type:"decision" },
+  { label:"Water deprivation test", detail:"POsm increases further, UOsm remains low.", type:"action" },
+  { label:"UOsm < 300 → Administer desmopressin", detail:"No or minimal ↑ UOsm → AVP resistance. Significant ↑ → Complete AVP deficiency.", type:"no" },
+  { label:"UOsm 300-800 → Administer desmopressin", detail:"Significant ↑ → Partial AVP deficiency. No or minimal ↑ → Primary polydipsia.", type:"yes" },
+  { label:"Plasma copeptin testing", detail:"POsm and UOsm increase to normal level → Primary polydipsia.", type:"action" }
+]},
+{ id:"a87", category:"DIAGNOSIS", system:"Cardiovascular", name:"Acute Chest Pain — Life-Threatening Causes", alt:"Adult Chest Pain Algorithm", desc:"ABCDE assessment and differentiation of life-threatening chest pain.", steps:[
+  { label:"Acute chest pain in an adult patient", detail:"Initial assessment.", type:"action" },
+  { label:"ABCDE assessment", detail:"Airway, Breathing, Circulation, Disability, Exposure.", type:"action" },
+  { label:"12-lead ECG", detail:"Decision point.", type:"decision" },
+  { label:"ST elevations present → STEMI", detail:"Cardiology consult · Immediate revascularization · ASA + ADP receptor inhibitor · Anticoagulation, statin.", type:"yes" },
+  { label:"No ST elevations present", detail:"Obtain IV access · Monitor cardiac rhythm, BP, SpO₂ · Supplemental O₂ if hypoxemic.", type:"no" },
+  { label:"Focused history, physical exam, labs, CXR", detail:"Decision point.", type:"decision" },
+  { label:"No life-threatening causes identified", detail:"Consider alternate diagnoses.", type:"terminal" },
+  { label:"↑ Troponin + cardiac chest pain + CAD risk factors → NSTEMI", detail:"Cardiology consult and risk stratification (TIMI) · ASA + ADP receptor inhibitor · Anticoagulation, statin.", type:"yes" },
+  { label:"Normal troponin + cardiac chest pain at rest + CAD risk factors → Unstable angina", detail:"Cardiology consult and risk stratification · ASA + ADP receptor inhibitor · Anticoagulation, statin.", type:"yes" },
+  { label:"Mediastinal shift + absent lung markings → Tension pneumothorax", detail:"Needle decompression · Chest tube · Supplemental O₂.", type:"yes" },
+  { label:"Prominent cardiac silhouette + JVD + muffled heart sounds → Cardiac tamponade", detail:"Bedside TTE · Needle decompression · Cardiology consult.", type:"yes" },
+  { label:"Widened mediastinum + HTN → Aortic dissection", detail:"CTA chest · BP management · Cardiothoracic surgery consult.", type:"yes" },
+  { label:"Pneumomediastinum → Esophageal rupture", detail:"Esophagography · Broad-spectrum IV antibiotics · Surgery consult.", type:"yes" },
+  { label:"Hypoxemia + elevated D-dimer + Wells > 3 → Pulmonary embolism", detail:"Anticoagulation · CTA chest.", type:"yes" }
+]},
+{ id:"a88", category:"MANAGEMENT", system:"Cardiovascular", name:"Newly Diagnosed Atrial Fibrillation", alt:"AFib Management", desc:"Acute and long-term management of atrial fibrillation.", steps:[
+  { label:"Newly diagnosed atrial fibrillation", detail:"Confirm diagnosis on ECG.", type:"action" },
+  { label:"Rapid ventricular response? (HR > 100-110/min)", detail:"Decision point.", type:"decision" },
+  { label:"No (AFib without RVR)", detail:"Cardiology consult · Identify and treat reversible causes · Consider anticoagulation · Lifestyle modifications.", type:"no" },
+  { label:"Yes (AFib with RVR)", detail:"Presence of hemodynamic instability, acute cardiac ischemia, acute heart failure, altered mental status.", type:"yes" },
+  { label:"Unstable", detail:"No pulse → PEA arrest: Activate code. Pulse present → Emergent synchronized cardioversion, urgent cardiology consult, ICU/CCU transfer, identify and treat underlying cause, continuous telemetry.", type:"no" },
+  { label:"Stable", detail:"< 48 h: IV rate or rhythm control · > 48 h: IV rate control · Consider cardiology consult · ICU/CCU consult if refractory RVR.", type:"yes" },
+  { label:"Resolution of RVR & still in AFib", detail:"Choice of rate vs rhythm control depends on duration of symptoms & comorbidities.", type:"action" },
+  { label:"Rate control", detail:"Target resting HR: < 110/min for asymptomatic normal LVEF · < 80/min for symptomatic. First: BB, non-DHP CCB. Second: digoxin. Third: amiodarone.", type:"action" },
+  { label:"Rhythm control", detail:"Assess need for anticoagulation. Pharmacologic: Dofetilide, ibutilide, flecainide, propafenone, amiodarone, sotalol, procainamide. Electrical: cardioversion. Interventional: catheter ablation, Maze.", type:"action" },
+  { label:"Anticoagulation", detail:"Assess need for anticoagulation (CHA₂DS₂-VASc).", type:"action" }
+]},
+{ id:"a89", category:"MANAGEMENT", system:"Cardiovascular", name:"Carotid Artery Stenosis", alt:"Carotid Stenosis Management", desc:"Medical vs surgical management based on stenosis severity and symptoms.", steps:[
+  { label:"Suspected carotid stenosis", detail:"Initial evaluation.", type:"action" },
+  { label:"Carotid duplex ultrasound", detail:"Confirm stenosis.", type:"action" },
+  { label:"Stenosis detected (any degree)", detail:"Medical management to be continued long-term.", type:"action" },
+  { label:"Stenosis < 50%", detail:"Revascularization usually not indicated.", type:"no" },
+  { label:"Stenosis ≥ 50%", detail:"Assess symptoms.", type:"yes" },
+  { label:"Asymptomatic", detail:"Moderate (50-69%): Consider revascularization · Severe (70-99%): Consider revascularization.", type:"no" },
+  { label:"Symptomatic", detail:"Moderate (50-69%): Consider revascularization · Severe (70-99%): Revascularization is usually indicated.", type:"yes" }
+]},
+{ id:"a90", category:"MANAGEMENT", system:"Respiratory", name:"Initial Management of Acute Asthma Exacerbation", alt:"Asthma Exacerbation", desc:"Severity-based management of acute asthma.", steps:[
+  { label:"Suspected acute asthma exacerbation", detail:"Initial evaluation to determine severity based on worst feature.", type:"action" },
+  { label:"Mild or moderate", detail:"Speak in sentences, sits upright, not agitated, no accessory muscles · RR above baseline · HR 100-120 bpm · PEF > 50% · SpO₂ 90-95% on room air.", type:"yes" },
+  { label:"Severe", detail:"Speak in words, sits in tripod position, agitated, uses accessory muscles · RR > 30/min · HR > 120 bpm · PEF ≤ 50% · SpO₂ < 90% on room air.", type:"no" },
+  { label:"Life-threatening", detail:"Drowsiness, confusion, silent chest.", type:"decision" },
+  { label:"Initial treatment (mild/moderate)", detail:"Oxygen · Inhaled SABA · PO glucocorticoids · Consider inhaled SAMA.", type:"action" },
+  { label:"Maximize treatment (severe)", detail:"Oxygen · Nebulized SABA and SAMA · PO/IV glucocorticoids · Consider IV magnesium and ICS.", type:"action" },
+  { label:"Consult critical care and prepare for intubation (life-threatening)", detail:"Immediate ICU consult.", type:"action" },
+  { label:"Incomplete response", detail:"Escalate to severe treatment.", type:"action" },
+  { label:"Poor response", detail:"Escalate to life-threatening management.", type:"action" }
+]},
+{ id:"a91", category:"DIAGNOSIS", system:"Respiratory", name:"Diagnostic Approach to Pulmonary Embolism", alt:"PE Diagnostic Algorithm", desc:"Stratifying by hemodynamic stability and pretest probability.", steps:[
+  { label:"Suspected pulmonary embolism", detail:"Initial assessment.", type:"action" },
+  { label:"Hemodynamically unstable?", detail:"Decision point.", type:"decision" },
+  { label:"Stable", detail:"Estimate pretest probability (PTP) using Wells score or revised Geneva score.", type:"yes" },
+  { label:"Unstable", detail:"Stabilize the patient. If stable enough for imaging → Imaging. If remains unstable → Bedside echocardiography.", type:"no" },
+  { label:"Low PTP", detail:"Consider additional risk stratification (e.g., PERC rule). If PTP remains low → PE unlikely. If high PTP → D-dimer.", type:"no" },
+  { label:"Intermediate PTP", detail:"Consider empiric anticoagulation. D-dimer: if high → Imaging.", type:"decision" },
+  { label:"High PTP", detail:"Go directly to Imaging (CTPA or V/Q scan).", type:"yes" },
+  { label:"D-dimer", detail:"Normal → PE unlikely. High → Imaging.", type:"action" },
+  { label:"Imaging (CTPA or V/Q scan)", detail:"Negative → PE unlikely. Positive → Treat as pulmonary embolism.", type:"action" },
+  { label:"Bedside echocardiography", detail:"RV dysfunction → Treat as PE. No RV dysfunction → PE unlikely, consider alternative diagnoses.", type:"action" }
+]},
+{ id:"a92", category:"DIAGNOSIS", system:"Respiratory", name:"Pulmonary Function Testing (PFTs) Interpretation", alt:"PFT Interpretation Algorithm", desc:"Spirometry-based differentiation of restrictive vs obstructive lung disease.", steps:[
+  { label:"Pulmonary function testing (PFTs) interpretation", detail:"Spirometry, TLC, DLCO, bronchodilator challenge.", type:"action" },
+  { label:"FEV₁/FVC ≥ 0.7?", detail:"Decision point.", type:"decision" },
+  { label:"Yes → Restrictive lung disease", detail:"Check FVC.", type:"yes" },
+  { label:"No → Obstructive lung disease", detail:"Check FVC.", type:"no" },
+  { label:"FVC ≥ 80% predicted?", detail:"Decision point.", type:"decision" },
+  { label:"Yes → Measure DLCO", detail:"↑: Polycythemia, pulmonary hemorrhage, L→R shunt, pregnancy. Normal: Healthy. ↓: Anemia, pulmonary edema, PAH, chronic VTE.", type:"yes" },
+  { label:"No → TLC ≥ 80% predicted?", detail:"Decision point.", type:"no" },
+  { label:"No → Restrictive lung disease", detail:"Measure DLCO. ≥ 75%: Chest wall or neuromuscular disorders. < 75%: ILD.", type:"no" },
+  { label:"Yes → Mixed lung disease", detail:"Measure DLCO.", type:"yes" },
+  { label:"Obstructive lung disease", detail:"Check TLC ≥ 80%?", type:"action" },
+  { label:"Yes → Obstructive lung disease", detail:"Measure DLCO. < 75%: Emphysematous COPD. ≥ 75%: Bronchodilator challenge test.", type:"yes" },
+  { label:"No → Mixed lung disease", detail:"Measure DLCO.", type:"no" }
+]},
+{ id:"a93", category:"DIAGNOSIS", system:"Nephrology", name:"Diagnosis of Hypocalcemia", alt:"Hypocalcemia Algorithm", desc:"PTH-based differentiation of hypocalcemia causes.", steps:[
+  { label:"Serum calcium < 8.5 mg/dL", detail:"Confirm hypocalcemia.", type:"action" },
+  { label:"Either: Order ionized Ca²⁺ or Calculate Ca²⁺ corrected for albumin", detail:"Decision point.", type:"decision" },
+  { label:"Normal Ca²⁺ → Factitious hypocalcemia", detail:"No treatment needed.", type:"no" },
+  { label:"↓ Ca²⁺ → Confirmed hypocalcemia", detail:"Discontinue any medications that can cause hypocalcemia.", type:"yes" },
+  { label:"Measure PTH", detail:"Decision point.", type:"decision" },
+  { label:"Normal or ↓ PTH → Hypoparathyroidism", detail:"Treat with calcium and vitamin D.", type:"no" },
+  { label:"↑ PTH → Measure phosphate, magnesium, calcidiol, and creatinine", detail:"Decision point.", type:"yes" },
+  { label:"↓ Or normal phosphate + ↓ Calcidiol → Vitamin D deficiency", detail:"Treat with vitamin D.", type:"no" },
+  { label:"↑ Phosphate + ↑ Creatinine → CKD", detail:"Treat CKD.", type:"yes" },
+  { label:"↑ Phosphate → Pseudohypoparathyroidism", detail:"Treat with calcium and vitamin D.", type:"decision" },
+  { label:"↓ Magnesium → Either: Malabsorption · Alcohol use disorder", detail:"Correct magnesium.", type:"terminal" }
+]},
+{ id:"a94", category:"MANAGEMENT", system:"Critical Care", name:"Mechanical Ventilation — Troubleshooting", alt:"Ventilator Troubleshooting", desc:"DOPE mnemonic-based troubleshooting for ventilated patients.", steps:[
+  { label:"Respiratory distress in mechanically ventilated patient", detail:"Imminent cardiorespiratory collapse? Yes → Disconnect from ventilator & manually ventilate with 100% FiO₂. Review DOPE mnemonic. Relatively stable → Check alarms & monitors, tubing, order tests.", type:"action" },
+  { label:"DOPE mnemonic", detail:"Displacement/disconnection → Reconnect, laryngoscopy, reposition/reintubate. Obstruction → Reposition, suction, bite block. Pneumothorax → Chest tube. Equipment failure → Manual ventilation.", type:"action" },
+  { label:"Increase FiO₂ to 100%", detail:"Focused H&P to determine cause.", type:"action" },
+  { label:"Hemodynamic compromise", detail:"Treat underlying + optimize fluids and pressors. DHI present? No → Decrease PEEP. Yes → Restart with ↓ Vt/RR/I:E ratio, ↑ Inspiratory flow rate.", type:"action" },
+  { label:"Dynamic hyperinflation (DHI)", detail:"Disconnect from ventilator; manually decompress chest.", type:"action" },
+  { label:"Patient-ventilator dyssynchrony", detail:"Patient-related → Treat underlying disorder, optimize sedation. Ventilator-related → Expert consult, adjust mode/parameters.", type:"action" },
+  { label:"Ventilation issue", detail:"Mandatory mode (AC-VCV) → Adjust minute ventilation. Spontaneous mode (PSV) → Treat underlying, add inspiratory support, reduce sedation, change to mandatory mode.", type:"action" },
+  { label:"Oxygenation issue", detail:"Treat underlying reversible causes. Adjust FiO₂ and PEEP. Consider lung recruitment maneuvers.", type:"action" }
+]},
+{ id:"a95", category:"RESUSCITATION", system:"Critical Care", name:"Conditions Necessitating Mechanical Ventilation", alt:"Mechanical Ventilation Indications", desc:"Normal lung mechanics, hypoxemic, and hypercapnic respiratory failure.", steps:[
+  { label:"Conditions necessitating mechanical ventilation", detail:"Decision point.", type:"decision" },
+  { label:"Normal lung mechanics", detail:"Airway protection · Hemodynamic compromise. Prior to intubation: Optimize hemodynamics with fluids and vasopressors · Pretreatment with push-dose vasopressors · Induction agent with stable CV response (etomidate).", type:"yes" },
+  { label:"Hypoxemic respiratory failure", detail:"Cardiogenic pulmonary edema → IV furosemide, IV nitroglycerin, rate control if Afib with RVR → Trial NIPPV → Inadequate → Intubate. Pneumonia (without ARDS) → Consider NIPPV. ARDS → Consider NIPPV (only in mild) → Intubate.", type:"no" },
+  { label:"Hypercapnic respiratory failure", detail:"Neuromuscular weakness → Trial NIPPV → Inadequate → Intubate. Acidosis (DKA, salicylate, AECOPD) → Trial NIPPV → Pretreatment with IV bicarbonate. Obstructive lung disease → Indications for urgent intubation? Yes → Intubate. No → Maximize medical therapy → NIPPV → Inadequate → Intubate.", type:"decision" },
+  { label:"Intubate", detail:"Mode: AC-VCV/PCV/PRVC. Vt 8-10 mL/kg, RR 10-15/min, FiO₂ 100% → < 40%, PEEP 3-5 cm H₂O. If ARDS → LPV: Vt 6-8 mL/kg, RR 20-35/min, PEEP 5 cm H₂O. Prone, recruitment maneuvers, neuromuscular blockade.", type:"terminal" }
+]},
+{ id:"a96", category:"MANAGEMENT", system:"Dermatology", name:"Signs of Skin or Soft Tissue Infection", alt:"SSTI Algorithm", desc:"Nonpurulent vs purulent SSTI management.", steps:[
+  { label:"Signs of skin or soft tissue infection", detail:"Redness, heat, swelling, pain, loss of function.", type:"action" },
+  { label:"Signs of necrotizing infection?", detail:"Rapid deterioration or shock · Progressive infection with necrosis · Bullae · Purple skin discoloration. Yes → Emergency surgical debridement + cultures + sensitivities. Empiric IV antibiotics: Daptomycin, linezolid, or vancomycin PLUS carbapenem, pip/tazo, FQ + metronidazole, or ceftriaxone + metronidazole.", type:"decision" },
+  { label:"Condition requires specialized tx?", detail:"Bite wound · Orbital cellulitis · Complex abscess · Device/prosthetics-related. Yes → Specialist consult.", type:"decision" },
+  { label:"Nonpurulent vs Purulent", detail:"Determine severity: Exam, labs (CBC, BMP, CRP, calcitonin), ± imaging.", type:"decision" },
+  { label:"Mild SSTI", detail:"Oral antibiotics: Penicillin VK, cephalexin, dicloxacillin, or clindamycin. Incision + drainage usually sufficient.", type:"no" },
+  { label:"Moderate SSTI", detail:"IV antibiotics: Penicillin, ceftriaxone, cefazolin, or clindamycin. Incision + drainage. Oral/IV: TMP/SMX or doxycycline.", type:"yes" },
+  { label:"Severe SSTI", detail:"SIRS · Deep tissue infection · Necrotizing · Organ failure · Immunocompromised · Failed initial treatment. Surgical debridement. IV antibiotics: Vancomycin PLUS pip/tazo or meropenem.", type:"decision" },
+  { label:"Adapt antibiotic treatment to culture and sensitivity results", detail:"Evaluate and treat risk factors to prevent recurrent infection.", type:"terminal" }
+]}
+];
+
+// ============================================================
+// STATE + PERSISTENCE
+// ============================================================
+const STORAGE_KEY = 'diagnostic_algorithms_v1';
+const HILITE_KEY = 'diagnostic_algorithms_highlights';
+const BOOKMARK_KEY = 'diagnostic_algorithms_bookmarks';
+const VIEWMODE_KEY = 'diagnostic_algorithms_viewmode';
+
+let algorithms = [];
+let highlights = {};
+let activeCategory = 'ALL';
+let activeSystem = 'All';
+let searchQuery = '';
+let isTestMode = false;
+let isHighlightMode = false;
+let isFlipView = false;
+let bookmarkedIds = [];
+let renderLimit = 300;
+const PAGE_SIZE = 60;
+
+function loadData(){
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) { try { algorithms = JSON.parse(saved); return; } catch(e){ } }
+  algorithms = ALGORITHMS.map(a => ({...a}));
+  saveData();
+}
+function saveData(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(algorithms)); } catch(e){ showToast('⚠️ Storage full'); } }
+function loadHighlights(){ try { highlights = JSON.parse(localStorage.getItem(HILITE_KEY) || '{}'); } catch(e){ highlights = {}; } }
+function saveHighlights(){
+  try { localStorage.setItem(HILITE_KEY, JSON.stringify(highlights)); } catch(e){}
+  if (window.ZonaBridge) window.ZonaBridge.onHighlightsChanged(highlights);
+}
+function loadBookmarks(){ try { bookmarkedIds = JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '[]'); } catch(e){ bookmarkedIds = []; } }
+function saveBookmarks(){
+  try { localStorage.setItem(BOOKMARK_KEY, JSON.stringify(bookmarkedIds)); } catch(e){}
+  if (window.ZonaBridge) window.ZonaBridge.onBookmarksChanged(bookmarkedIds);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function initApp() {
+  loadData();
+  loadHighlights();
+  loadBookmarks();
+  if (localStorage.getItem(VIEWMODE_KEY) === 'flip') isFlipView = true;
+  applyViewMode();
+  updateBookmarkCount();
+  buildSidebar();
+  buildSystemChips();
+  updateActiveSystemChip();
+  renderCards();
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    searchQuery = e.target.value.toLowerCase().trim();
+    document.getElementById('clearSearch').classList.toggle('hidden', searchQuery === '');
+    renderLimit = PAGE_SIZE;
+    renderCards();
+  });
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 300) document.getElementById('backTopBtn').classList.remove('opacity-0', 'pointer-events-none');
+    else document.getElementById('backTopBtn').classList.add('opacity-0', 'pointer-events-none');
+  });
+  if (localStorage.getItem('mednotes_theme') === 'dark' ||
+      (!localStorage.getItem('mednotes_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark');
+    document.getElementById('themeIcon').textContent = '☀️';
+  }
+
+  // ── Host hydration listener (bridged by guidelines.js) ──
+  document.addEventListener('zona:hydrated', function (e) {
+    var d = e.detail || {};
+    if (d.kind === 'bookmarks')  { bookmarkedIds = Array.isArray(d.value) ? d.value : []; updateBookmarkCount(); renderCards(); }
+    if (d.kind === 'highlights') { highlights = (d.value && typeof d.value === 'object') ? d.value : {}; renderCards(); }
+  });
+}
+
+// ============================================================
+// VIEW MODE
+// ============================================================
+function toggleViewMode(){
+  isFlipView = !isFlipView;
+  localStorage.setItem(VIEWMODE_KEY, isFlipView ? 'flip' : 'notes');
+  applyViewMode();
+  renderCards();
+  showToast(isFlipView ? '🃏 Flip-card view' : '📝 Notes view');
+}
+function applyViewMode(){
+  const icon = document.getElementById('viewToggleIcon');
+  const label = document.getElementById('viewToggleLabel');
+  if (isFlipView) { document.getElementById('contentGrid').classList.add('flip-view'); icon.textContent = '🃏'; label.textContent = 'Flip'; }
+  else { document.getElementById('contentGrid').classList.remove('flip-view'); icon.textContent = '📝'; label.textContent = 'Notes'; }
+}
+
+// ============================================================
+// SIDEBAR
+// ============================================================
+function buildSidebar(){
+  const counts = {};
+  algorithms.forEach(n => { counts[n.system] = (counts[n.system] || 0) + 1; });
+  const systems = ['All', ...new Set(algorithms.map(n => n.system))];
+  const list = document.getElementById('sidebarList');
+  const allBtn = `<button onclick="setSystemFilter('All')" class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-bold mb-1 transition ${activeSystem === 'All' ? 'bg-sky-600 text-white' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}">📖 All Systems <span class="float-right opacity-70">${algorithms.length}</span></button>`;
+  const items = systems.filter(s => s !== 'All').map(s => {
+    const isActive = activeSystem === s;
+    return `<button onclick="setSystemFilter('${s.replace(/'/g, "\\'")}')" class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold mb-1 transition ${isActive ? 'bg-sky-600 text-white' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}">${escapeHtml(s)} <span class="float-right opacity-70">${counts[s] || 0}</span></button>`;
+  }).join('');
+  list.innerHTML = allBtn + '<div class="h-px bg-slate-200 dark:bg-slate-800 my-2"></div>' + items;
+}
+function setSystemFilter(s){ activeSystem = s; renderLimit = PAGE_SIZE; buildSidebar(); buildSystemChips(); updateActiveSystemChip(); closeSidebar(); renderCards(); }
+function updateActiveSystemChip(){
+  const chip = document.getElementById('activeSystemChip');
+  const name = document.getElementById('activeSystemName');
+  if (activeSystem === 'All') chip.classList.add('hidden');
+  else { chip.classList.remove('hidden'); name.textContent = activeSystem; }
+}
+function openSidebar(){ document.getElementById('sidebar').classList.remove('-translate-x-full'); document.getElementById('sidebarOverlay').classList.remove('hidden'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.add('-translate-x-full'); document.getElementById('sidebarOverlay').classList.add('hidden'); }
+
+// ============================================================
+// CHIPS
+// ============================================================
+function buildSystemChips(){
+  const chipContainer = document.getElementById('systemChips');
+  const scoped = algorithms.filter(item => {
+    if (activeSystem !== 'All' && item.system !== activeSystem) return false;
+    if (activeCategory !== 'ALL' && activeCategory !== 'BOOKMARKS' && item.category !== activeCategory) return false;
+    return true;
+  });
+  const systems = ['All', ...new Set(scoped.map(item => item.system))];
+  if (!systems.includes(activeSystem)) activeSystem = 'All';
+  chipContainer.innerHTML = systems.map(sys => {
+    const isSelected = sys === activeSystem;
+    const count = sys === 'All' ? scoped.length : scoped.filter(i => i.system === sys).length;
+    return `<button onclick="setSystemFilter('${sys.replace(/'/g,"\\'")}')" class="px-2.5 py-1 rounded-full border text-xs font-semibold transition whitespace-nowrap ${isSelected ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-900 dark:border-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-400'}">${escapeHtml(sys)} (${count})</button>`;
+  }).join('');
+}
+function setCategoryFilter(cat){
+  activeCategory = cat; renderLimit = PAGE_SIZE;
+  document.querySelectorAll('.cat-btn').forEach(btn => {
+    btn.classList.remove('bg-sky-600','text-white','border-sky-600');
+    btn.classList.add('bg-white','dark:bg-slate-800','text-slate-700','dark:text-slate-300','border-slate-300','dark:border-slate-700');
+  });
+  const activeBtn = document.getElementById(`cat-${cat}`);
+  if (activeBtn) {
+    activeBtn.classList.remove('bg-white','dark:bg-slate-800','text-slate-700','dark:text-slate-300','border-slate-300','dark:border-slate-700');
+    activeBtn.classList.add('bg-sky-600','text-white','border-sky-600');
+  }
+  buildSystemChips(); renderCards();
+}
+function clearSearchInput(){ document.getElementById('searchInput').value = ''; searchQuery = ''; renderLimit = PAGE_SIZE; document.getElementById('clearSearch').classList.add('hidden'); renderCards(); }
+function getFilteredData(){
+  return algorithms.filter(item => {
+    if (activeCategory === 'BOOKMARKS') { if (!bookmarkedIds.includes(item.id)) return false; }
+    else if (activeCategory !== 'ALL' && item.category !== activeCategory) return false;
+    if (activeSystem !== 'All' && item.system !== activeSystem) return false;
+    if (searchQuery) {
+      const q = searchQuery;
+      const nameMatch = item.name.toLowerCase().includes(q);
+      const altMatch = item.alt && item.alt.toLowerCase().includes(q);
+      const descMatch = item.desc && item.desc.toLowerCase().includes(q);
+      const stepMatch = item.steps.some(s => s.label.toLowerCase().includes(q) || (s.detail && s.detail.toLowerCase().includes(q)));
+      const sysMatch = item.system && item.system.toLowerCase().includes(q);
+      return nameMatch || altMatch || descMatch || stepMatch || sysMatch;
+    }
+    return true;
+  });
+}
+
+// ============================================================
+// RENDER CARDS
+// ============================================================
+function renderCards(){
+  const filtered = getFilteredData();
+  document.getElementById('countPill').textContent = filtered.length;
+  if (filtered.length === 0) { document.getElementById('contentGrid').innerHTML = ''; document.getElementById('emptyState').classList.remove('hidden'); document.getElementById('loadMoreBtn').classList.add('hidden'); return; }
+  document.getElementById('emptyState').classList.add('hidden');
+  const toShow = filtered.slice(0, renderLimit);
+  document.getElementById('contentGrid').innerHTML = toShow.map(isFlipView ? renderFlipCard : renderNoteCard).join('');
+  if (filtered.length > renderLimit) { document.getElementById('loadMoreBtn').classList.remove('hidden'); document.getElementById('loadMoreBtn').textContent = `Load More (${filtered.length - renderLimit} remaining)`; }
+  else document.getElementById('loadMoreBtn').classList.add('hidden');
+}
+function loadMore(){ renderLimit += PAGE_SIZE; renderCards(); }
+
+function renderNoteCard(item){
+  const isBookmarked = bookmarkedIds.includes(item.id);
+  const badgeColor = getCategoryBadgeColor(item.category);
+  const hl = highlights[item.id] || {};
+  const hlClass = isHighlightMode ? 'hl-active-mode' : '';
+
+  return `
+    <article class="note-card relative bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-3 sm:p-4 flex flex-col justify-between shadow-sm">
+      <div>
+        <div class="flex items-start justify-between gap-2 mb-2">
+          <div class="min-w-0">
+            <span class="inline-block px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-indigo-600 text-white mb-1 mr-1">${escapeHtml(item.system)}</span>
+            <span class="inline-block px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider mb-1 ${badgeColor}">${item.category}</span>
+            <h3 class="text-base font-extrabold text-slate-900 dark:text-white leading-snug break-words">${escapeHtml(item.name)}</h3>
+            ${item.alt ? `<p class="text-xs italic text-slate-500 dark:text-slate-400 font-medium">${escapeHtml(item.alt)}</p>` : ''}
+          </div>
+          <div class="flex flex-col items-end gap-1 flex-shrink-0">
+            <button onclick="toggleBookmark('${item.id}')" class="text-lg p-0.5 hover:scale-125 transition">${isBookmarked ? '⭐' : '☆'}</button>
+          </div>
+        </div>
+        <p class="text-xs text-slate-600 dark:text-slate-400 mb-3">${escapeHtml(item.desc || '')}</p>
+        <div class="space-y-1.5">
+          ${item.steps.map((step, idx) => `
+            <div class="algo-step" data-type="${step.type || 'action'}">
+              <div class="algo-step-num">${idx + 1}</div>
+              <div onclick="toggleHighlight('${item.id}','step${idx}')" class="hl-pt ${hlClass} p-2 rounded-xl border ${hl['step'+idx] ? 'bg-amber-100 dark:bg-amber-900/40 border-amber-300 dark:border-amber-700' : 'bg-slate-50 dark:bg-slate-900/60 border-slate-100 dark:border-slate-800'}">
+                <p class="text-xs font-bold text-slate-800 dark:text-slate-200 ${isTestMode ? 'blur-text' : ''}">${escapeHtml(step.label)}</p>
+                ${step.detail ? `<p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 ${isTestMode ? 'blur-text' : ''}">${escapeHtml(step.detail)}</p>` : ''}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </article>`;
+}
+
+function renderFlipCard(item){
+  const isBookmarked = bookmarkedIds.includes(item.id);
+  const badgeColor = getCategoryBadgeColor(item.category);
+  return `
+    <article class="note-card relative bg-transparent cursor-pointer" onclick="this.classList.toggle('flipped')">
+      <div class="flip-inner">
+        <div class="flip-face border border-slate-200 dark:border-slate-700/80 shadow-sm">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <span class="inline-block px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-indigo-600 text-white">${escapeHtml(item.system)}</span>
+            <span class="inline-block px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase ${badgeColor}">${item.category}</span>
+          </div>
+          <div class="flex-1 flex items-center justify-center text-center px-2">
+            <h3 class="text-lg font-extrabold text-slate-900 dark:text-white leading-tight break-words">${escapeHtml(item.name)}
+              ${item.alt ? `<span class="block text-xs italic text-slate-500 dark:text-slate-400 font-medium mt-2">${escapeHtml(item.alt)}</span>` : ''}
+            </h3>
+          </div>
+          <div class="text-center text-[10px] font-bold text-slate-400 pt-2">TAP TO REVEAL ⤴</div>
+        </div>
+        <div class="flip-face flip-back border border-slate-200 dark:border-slate-700/80 shadow-sm">
+          <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-200 dark:border-slate-700">
+            <span class="text-[10px] font-extrabold uppercase text-sky-600 dark:text-sky-400">${escapeHtml(item.system)}</span>
+            <button onclick="event.stopPropagation(); toggleBookmark('${item.id}')" class="text-base">${isBookmarked ? '⭐' : '☆'}</button>
+          </div>
+          <p class="text-xs text-slate-600 dark:text-slate-400 mb-2">${escapeHtml(item.desc || '')}</p>
+          <div class="space-y-1.5">
+            ${item.steps.map((step, idx) => `
+              <div class="algo-step" data-type="${step.type || 'action'}">
+                <div class="algo-step-num">${idx + 1}</div>
+                <div class="p-1.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
+                  <p class="text-[11px] font-bold text-slate-800 dark:text-slate-200 ${isTestMode ? 'blur-text' : ''}">${escapeHtml(step.label)}</p>
+                  ${step.detail ? `<p class="text-[10px] text-slate-600 dark:text-slate-400 mt-0.5 ${isTestMode ? 'blur-text' : ''}">${escapeHtml(step.detail)}</p>` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="text-center text-[10px] font-bold text-slate-400 pt-2 mt-auto">TAP TO FLIP BACK</div>
+        </div>
+      </div>
+    </article>`;
+}
+
+function getCategoryBadgeColor(cat) {
+  switch (cat) {
+    case 'DIAGNOSIS': return 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300';
+    case 'MANAGEMENT': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300';
+    case 'RESUSCITATION': return 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300';
+    case 'ACID_BASE': return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300';
+    default: return 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300';
+  }
+}
+
+// ============================================================
+// BOOKMARKS / HIGHLIGHT / TEST MODE
+// ============================================================
+function toggleBookmark(id) {
+  if (bookmarkedIds.includes(id)) { bookmarkedIds = bookmarkedIds.filter(b => b !== id); showToast('Bookmark removed'); }
+  else { bookmarkedIds.push(id); showToast('Saved ⭐'); }
+  saveBookmarks(); updateBookmarkCount(); renderCards();
+}
+function updateBookmarkCount(){ document.getElementById('bookmarkCount').textContent = bookmarkedIds.length; }
+
+function toggleHighlightMode(){
+  isHighlightMode = !isHighlightMode;
+  const btn = document.getElementById('hlModeBtn');
+  btn.classList.toggle('bg-amber-500', isHighlightMode);
+  btn.classList.toggle('text-white', isHighlightMode);
+  btn.classList.toggle('border-amber-500', isHighlightMode);
+  document.getElementById('hlModeLabel').textContent = `Highlight: ${isHighlightMode ? 'ON' : 'OFF'}`;
+  renderCards();
+}
+function toggleHighlight(itemId, key){
+  if (!isHighlightMode) return;
+  highlights[itemId] = highlights[itemId] || {};
+  highlights[itemId][key] = !highlights[itemId][key];
+  if (!highlights[itemId][key]) delete highlights[itemId][key];
+  saveHighlights(); renderCards();
+}
+
+function toggleTestMode(){
+  isTestMode = !isTestMode;
+  const btn = document.getElementById('testModeBtn');
+  btn.classList.toggle('bg-sky-600', isTestMode);
+  btn.classList.toggle('text-white', isTestMode);
+  document.getElementById('testModeLabel').textContent = `Self-Test: ${isTestMode ? 'ON' : 'OFF'}`;
+  renderCards();
+}
+
+// ============================================================
+// BACKUP / RESET / MISC
+// ============================================================
+function exportBackup(){
+  const payload = {
+    algorithms: algorithms,
+    highlights,
+    bookmarks: bookmarkedIds,
+    exportedAt: new Date().toISOString(),
+    version: 1
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `diagnostic-algorithms-backup-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  showToast('Backup downloaded ⬇️');
+}
+function importBackup(event){
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const payload = JSON.parse(e.target.result);
+      if (!Array.isArray(payload.algorithms)) throw new Error('Invalid');
+      if (!confirm(`Import ${payload.algorithms.length} algorithms? Replaces current.`)) return;
+      algorithms = payload.algorithms;
+      highlights = payload.highlights || {};
+      bookmarkedIds = payload.bookmarks || [];
+      saveData(); saveHighlights(); saveBookmarks();
+      activeSystem = 'All'; activeCategory = 'ALL';
+      buildSidebar(); buildSystemChips(); updateActiveSystemChip(); updateBookmarkCount(); renderCards();
+      showToast('Restored ✓'); closeSidebar();
+    } catch(err) { showToast('⚠️ Invalid file'); }
+  };
+  reader.readAsText(file); event.target.value = '';
+}
+function resetAllData(){
+  if (!confirm('Reset ALL algorithms to default?')) return;
+  if (!confirm('Really sure? Cannot be undone.')) return;
+  algorithms = ALGORITHMS.map(a => ({...a}));
+  highlights = {}; bookmarkedIds = [];
+  saveData(); saveHighlights(); saveBookmarks();
+  activeSystem = 'All'; activeCategory = 'ALL';
+  buildSidebar(); buildSystemChips(); updateActiveSystemChip(); updateBookmarkCount(); renderCards();
+  showToast('Reset ✓');
+}
+
+function toggleTheme(){
+  const isDark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('mednotes_theme', isDark ? 'dark' : 'light');
+  document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
+}
+function showToast(msg){
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.remove('opacity-0','pointer-events-none');
+  setTimeout(() => toast.classList.add('opacity-0','pointer-events-none'), 2000);
+}
+function scrollToTop(){ window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function escapeHtml(str){
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+window.addEventListener('DOMContentLoaded', initApp);
+</script>
+
+<!-- ============ HOST BRIDGE (optional; for Zona embedding) ============ -->
 <script src="guidelines.js"></script>
 </body>
 </html>
