@@ -16,7 +16,8 @@
       if (k === 'class') el.className = v; else if (k === 'text') el.textContent = v;
       else if (k.slice(0, 2) === 'on') el.addEventListener(k.slice(2), v); else el.setAttribute(k, v);
     });
-    for (var i = 2; i < arguments.length; i++) { var c = arguments[i]; if (c == null || c === false) continue; el.append(c.nodeType ? c : document.createTextNode(String(c))); }
+    var add = function (c) { if (c == null || c === false) return; if (Array.isArray(c)) return c.forEach(add); el.append(c.nodeType ? c : document.createTextNode(String(c))); };   // v4: arrays of children allowed
+    for (var i = 2; i < arguments.length; i++) add(arguments[i]);
     return el;
   }
   function toast(msg) { var t = h('div', { class: 'toast', role: 'status', text: msg }); document.body.append(t); setTimeout(function () { t.remove(); }, 3400); }
@@ -82,6 +83,8 @@
 
   function renderStats(s) {
     var defs = [['t1', 'Total users', s.total], ['t2', 'Active (24 h)', s.active24h], ['t3', 'Active (7 days)', s.active7d], ['t4', 'Signups today', s.signupsToday]];
+    // v4: test & mistake tracker totals (shown only when the backend is v4)
+    if (s.testsLogged !== undefined) defs.push(['t1', 'Tests logged', s.testsLogged], ['t2', 'Mistakes logged', s.mistakesLogged], ['t3', 'Pending revisions', s.pendingRevisions]);
     $('tiles').replaceChildren.apply($('tiles'), defs.map(function (d) { return h('div', { class: 'card tile ' + d[0] }, h('small', { text: d[1] }), h('b', { text: String(d[2]) })); }));
     // last 14 days
     var days = [], now = new Date();
@@ -97,7 +100,7 @@
     }));
   }
 
-  var COLS = [['name', 'Name'], ['id', 'Mobile'], ['exam', 'Exam'], ['rank', 'Rank'], ['xp', 'XP'], ['lastSeen', 'Last seen'], ['logins', 'Logins'], ['status', 'Status']];
+  var COLS = [['name', 'Name'], ['id', 'Mobile'], ['exam', 'Exam'], ['rank', 'Rank'], ['xp', 'XP'], ['tests', 'Tests'], ['accuracy', 'Accuracy %'], ['mistakes', 'Mistakes'], ['lastSeen', 'Last seen'], ['logins', 'Logins'], ['status', 'Status']];
   function renderUsers() {
     $('thead').replaceChildren.apply($('thead'), COLS.map(function (c) {
       var th = h('th', { scope: 'col', 'aria-sort': sort.k === c[0] ? (sort.dir > 0 ? 'ascending' : 'descending') : 'none', text: c[1] + (sort.k === c[0] ? (sort.dir > 0 ? ' ▲' : ' ▼') : '') });
@@ -110,6 +113,8 @@
     $('tbody').replaceChildren.apply($('tbody'), rows.slice(0, 300).map(function (u) {
       var blocked = u.status === 'blocked';
       var act = h('button', { class: 'btn sm', type: 'button', title: 'Activity log', 'aria-label': 'Activity log for ' + u.name }, h('i', { class: 'fas fa-clock-rotate-left' }));
+      var perf = h('button', { class: 'btn sm', type: 'button', title: 'Test performance', 'aria-label': 'Test performance of ' + u.name }, h('i', { class: 'fas fa-chart-simple' }));
+      perf.addEventListener('click', function () { performance(u); });
       var rst = h('button', { class: 'btn sm', type: 'button', title: 'Reset device binding', 'aria-label': 'Reset device for ' + u.name }, h('i', { class: 'fas fa-mobile-screen' }));
       var blk = h('button', { class: 'btn sm', type: 'button', title: blocked ? 'Unblock' : 'Block', 'aria-label': (blocked ? 'Unblock ' : 'Block ') + u.name }, h('i', { class: 'fas ' + (blocked ? 'fa-unlock' : 'fa-ban') }));
       var del = h('button', { class: 'btn sm danger', type: 'button', title: 'Delete user', 'aria-label': 'Delete ' + u.name }, h('i', { class: 'fas fa-trash' }));
@@ -119,8 +124,9 @@
       del.addEventListener('click', function () { confirmBox('Delete ' + u.name + '?', 'This permanently erases their account and all cloud data. It cannot be undone.', 'Delete forever', true).then(function (ok) { if (ok) api('adminDeleteUser', { userId: u.id }).then(function () { toast('User deleted'); loadAll(); }).catch(function (e) { toast(e.message); }); }); });
       return h('tr', { class: blocked ? 'blocked' : '' },
         h('td', { text: u.name }), h('td', { text: u.id }), h('td', { text: u.exam }), h('td', { text: u.rank }), h('td', { text: String(u.xp) }),
+        h('td', { text: u.tests === undefined ? '' : String(u.tests) }), h('td', { text: u.accuracy === '' || u.accuracy === undefined ? 'N/A' : u.accuracy + '%' }), h('td', { text: u.mistakes === undefined ? '' : String(u.mistakes) + (u.pendingRev ? ' (' + u.pendingRev + ' pending)' : '') }),
         h('td', { text: fmt(u.lastSeen) }), h('td', { text: String(u.logins) }), h('td', null, h('span', { class: 'pill ' + (blocked ? 'bad' : 'ok'), text: u.status })),
-        h('td', null, h('div', { class: 'acts' }, act, rst, blk, del)));
+        h('td', null, h('div', { class: 'acts' }, act, perf, rst, blk, del)));
     }));
     $('uCount').textContent = rows.length + ' of ' + users.length + ' users' + (rows.length > 300 ? ' (showing first 300; refine your search)' : '');
   }
@@ -134,6 +140,34 @@
       close.addEventListener('click', function () { ov.remove(); }); ov.addEventListener('mousedown', function (e) { if (e.target === ov) ov.remove(); });
       document.body.append(ov); close.focus();
     }).catch(function (e) { toast(e.message); });
+  }
+
+  /* v4: one student's test performance (numbers only; their private notes are never sent to the admin) */
+  function pc(v) { return v === null || v === undefined || v === '' ? 'N/A' : v + '%'; }
+  function performance(u) {
+    api('adminUserAnalytics', { userId: u.id }).then(function (d) {
+      var T = d.totals, M = d.mistakes;
+      var kv = function (k, v) { return h('div', null, h('span', { text: k }), h('small', { text: String(v) })); };
+      var subj = d.bySubject.filter(function (b) { return b.attempted > 0 || b.mistakes > 0; });
+      var close = h('button', { class: 'btn', type: 'button', text: 'Close' });
+      var csv = h('button', { class: 'btn', type: 'button', text: 'Download report (CSV)' });
+      csv.addEventListener('click', function () {
+        api('adminUserReport', { userId: u.id, kind: 'overall' }).then(function (r) {
+          var q = function (v) { var s = String(v == null ? '' : v); if (/^[=+@\t\r-]/.test(s) && isNaN(Number(s))) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; }, out = [q(r.title + ' - ' + u.name), ''];
+          r.sections.forEach(function (s) { out.push(q(s.name)); out.push(s.columns.map(q).join(',')); s.rows.forEach(function (row) { out.push(row.map(q).join(',')); }); out.push(''); });
+          download('zona-performance-' + u.id + '-' + Date.now() + '.csv', '\uFEFF' + out.join('\r\n'), 'text/csv');
+        }).catch(function (e) { toast(e.message); });
+      });
+      var body = h('div', { class: 'list' },
+        kv('Tests logged', T.tests), kv('Questions attempted', T.attempted + ' / ' + T.totalQ), kv('Overall cumulative accuracy (weighted)', pc(T.pct.accuracy)), kv('Average test score', pc(T.avgScorePct)),
+        kv('Mistakes', M.total + ' (R1 ' + M.r1Done + ' · R2 ' + M.r2Done + ' · R3 ' + M.r3Done + ', pending ' + M.pending + ')'),
+        kv('Current streaks', 'tests ' + d.streaks.test + ' d · MCQ ' + d.streaks.mcq + ' d · revision ' + d.streaks.revision + ' d'),
+        d.byType.filter(function (b) { return b.tests; }).map(function (b) { return kv(b.label + ' (' + b.tests + ')', 'accuracy ' + pc(b.pct.accuracy) + ' · attempt ' + pc(b.pct.attempt)); }),
+        subj.length ? subj.map(function (b) { return kv(b.name, 'accuracy ' + pc(b.pct.accuracy) + ' · ' + b.attempted + ' attempted · ' + b.mistakes + ' mistakes'); }) : kv('Subjects', 'no subject-wise data yet'));
+      var ov = h('div', { class: 'ov', role: 'dialog', 'aria-modal': 'true' }, h('div', { class: 'card' }, h('h3', { text: 'Performance: ' + u.name + ' (' + (d.user.exam || '') + ')' }), body, h('div', { style: 'text-align:right;display:flex;gap:8px;justify-content:flex-end' }, csv, close)));
+      close.addEventListener('click', function () { ov.remove(); }); ov.addEventListener('mousedown', function (e) { if (e.target === ov) ov.remove(); });
+      document.body.append(ov); close.focus();
+    }).catch(function (e) { toast(e.code === 'NO_DATA' ? u.name + ' has not synced any tests yet.' : e.message); });
   }
 
   function renderSecurity(items) {
@@ -164,7 +198,7 @@
   $('expJson').addEventListener('click', function () { api('adminExport').then(function (d) { download('zona-users-' + Date.now() + '.json', JSON.stringify(d, null, 1), 'application/json'); }).catch(function (e) { toast(e.message); }); });
   $('expCsv').addEventListener('click', function () {
     api('adminExport').then(function (d) {
-      var keys = ['id', 'name', 'exam', 'rank', 'xp', 'logins', 'joined', 'lastSeen', 'status'];
+      var keys = ['id', 'name', 'exam', 'rank', 'xp', 'tests', 'accuracy', 'mistakes', 'pendingRev', 'logins', 'joined', 'lastSeen', 'status'];
       var csv = [keys.join(',')].concat(d.users.map(function (u) { return keys.map(function (k) { return csvCell(u[k]); }).join(','); })).join('\r\n');
       download('zona-users-' + Date.now() + '.csv', '﻿' + csv, 'text/csv');
     }).catch(function (e) { toast(e.message); });

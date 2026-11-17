@@ -1,0 +1,137 @@
+/* =====================================================================
+   Zona Occludens: AKTrack v1.1 interface  (v4.1)
+   1. Components used by zona-aktrack.js (scoped under .trk / .ak-*)
+   2. "AKTrack interface" skin: html.ak-skin (on by default; Settings → Appearance turns it off)
+      - AKTrack dark (#120A2F) + light (#F3F1FC) palettes on the Dark / Light themes
+      - colour-tiled sidebar, gradient brand, AKTrack cards / buttons / inputs
+      - mobile bottom bar
+   ===================================================================== */
+
+/* ---------------------------------------------------------------- 1. components */
+.trk .ak-hero { min-height: 100%; }
+.trk .ak-big { font-family: var(--font-head); font-size: 44px; font-weight: 800; line-height: 1; color: var(--text-main); }
+.trk .ak-huge { font-family: var(--font-head); font-size: 38px; font-weight: 800; line-height: 1.2; display: block; margin-top: 6px; color: var(--text-main); font-variant-numeric: tabular-nums; }
+.trk .ak-mid { font-family: var(--font-head); font-size: 20px; font-weight: 700; color: var(--text-main); }
+.trk .ak-h3 { font-family: var(--font-head); font-size: 17px; font-weight: 700; color: var(--text-main); margin: 0; }
+.trk .ak-cd { display: flex; gap: 8px; margin-top: 12px; }
+.trk .ak-cd div { flex: 1; text-align: center; background: var(--t-s3); border-radius: 12px; padding: 9px 4px; border: 1px solid var(--t-b2); }
+.trk .ak-cd b { display: block; font-family: var(--font-head); font-size: 25px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--text-main); }
+.trk .ak-cd small { font-size: 9.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .6px; }
+.trk .ak-ring { --p: 0; width: 92px; height: 92px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; background: conic-gradient(var(--c, var(--t-teal)) calc(var(--p) * 1%), var(--t-s3) 0); }
+.trk .ak-ring::before { content: ''; grid-area: 1 / 1; width: 72px; height: 72px; border-radius: 50%; background: var(--bg); }
+.trk .ak-ring b { grid-area: 1 / 1; z-index: 1; font-family: var(--font-head); font-size: 19px; font-weight: 800; color: var(--text-main); }
+.trk .ak-xpbar { height: 6px; border-radius: 6px; background: var(--t-s3); overflow: hidden; margin-top: 8px; }
+.trk .ak-xpbar i { display: block; height: 100%; background: linear-gradient(90deg, var(--t-saffron), var(--t-coral), var(--t-purple)); border-radius: 6px; transition: width .6s ease; }
+.trk .t-ib[disabled] { opacity: .4; cursor: not-allowed; }
+
+/* day strip */
+.trk .ak-strip { display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 10px; }
+.trk .ak-strip button { flex: 0 0 auto; width: 62px; padding: 8px 4px; border-radius: 12px; border: 1px solid var(--t-b1); background: var(--t-s3); color: var(--text-muted); cursor: pointer; text-align: center; font-weight: 700; font-family: inherit; }
+.trk .ak-strip button b { display: block; font-family: var(--font-head); font-size: 18px; color: var(--text-main); }
+.trk .ak-strip button small { font-size: 10px; text-transform: uppercase; }
+.trk .ak-strip button.today { border-color: var(--t-saffron); }
+.trk .ak-strip button.on { background: linear-gradient(135deg, var(--t-saffron), var(--t-purple)); border-color: transparent; color: #fff; }
+.trk .ak-strip button.on b { color: #fff; }
+.trk .ak-strip button .pd { display: block; height: 4px; border-radius: 4px; margin: 5px 8px 0; background: var(--t-b2); }
+
+/* month calendar */
+.trk .ak-cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.trk .ak-cal .dow { font-size: 10.5px; font-weight: 800; color: var(--text-dim); text-align: center; text-transform: uppercase; padding: 4px 0; }
+.trk .ak-cal .d { min-height: 74px; border-radius: 12px; border: 1px solid var(--t-b2); background: var(--t-s3); padding: 7px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; transition: all .15s; min-width: 0; }
+.trk .ak-cal .d:hover { border-color: var(--acc); }
+.trk .ak-cal .d.out { opacity: .28; cursor: default; }
+.trk .ak-cal .d.today { border-color: var(--t-saffron); box-shadow: 0 0 0 2px rgba(255,159,67,.25); }
+.trk .ak-cal .d.sel { background: color-mix(in srgb, var(--acc) 16%, transparent); }
+.trk .ak-cal .d b { font-family: var(--font-head); font-size: 14px; color: var(--text-main); }
+.trk .ak-cal .d small { font-size: 10px; color: var(--text-muted); font-weight: 700; }
+
+/* task cards */
+.trk .ak-task { border: 1px solid var(--t-b1); border-left: 4px solid var(--c, var(--t-blue)); border-radius: var(--radius-md); padding: 14px; background: var(--t-s3); min-width: 0; }
+.trk .ak-task.done { opacity: .8; }
+.trk .ak-task.done h5 { text-decoration: line-through; }
+.trk .ak-task h5 { font-family: var(--font-head); font-size: 15px; font-weight: 700; margin: 8px 0 0; color: var(--text-main); word-break: break-word; }
+.trk .ak-exp { padding: 18px !important; flex-direction: column; display: flex; align-items: center; gap: 8px; }
+
+/* topic library */
+.trk .ak-topics { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; margin-top: 12px; max-height: 520px; overflow-y: auto; padding-right: 4px; }
+.trk .ak-topic { border: 1px solid var(--t-b2); border-left: 3px solid var(--c); border-radius: 10px; padding: 8px 10px; background: var(--t-s3); font-size: 12.5px; min-width: 0; }
+.trk .ak-topic b { color: var(--text-main); font-weight: 700; word-break: break-word; }
+.trk .ak-subs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.trk .ak-subs span { font-size: 11px; padding: 2px 7px; border-radius: 999px; background: var(--t-s2); border: 1px solid var(--t-b2); color: var(--text-muted); }
+.trk .ak-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.trk .ak-x { border: none; background: none; color: var(--text-dim); cursor: pointer; padding: 0 3px; font-size: 15px; line-height: 1; font-weight: 700; min-height: 0 !important; min-width: 0 !important; }
+.trk .ak-x:hover { color: var(--t-coral); }
+.trk .ak-color { width: 44px; height: 32px; border: none; background: none; padding: 0; cursor: pointer; }
+
+/* mobile bottom bar (shown on phones / tablets) */
+.ak-bnav { display: none; }
+@media (max-width: 1024px) {
+  html.ak-skin .ak-bnav { display: flex; position: fixed; left: 10px; right: 10px; bottom: max(10px, var(--safe-bottom, 0px)); z-index: 140; background: var(--glass-surface); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border); border-radius: 20px; padding: 6px; box-shadow: var(--shadow-glass); justify-content: space-around; }
+  html.ak-skin .ak-bnav button { flex: 1; background: none; border: none; color: var(--text-dim); font-size: 10px; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 7px 2px; border-radius: 14px; cursor: pointer; font-family: var(--font-body); min-height: 44px; }
+  html.ak-skin .ak-bnav button i { font-size: 16px; }
+  html.ak-skin .ak-bnav button.active { color: #fff; background: linear-gradient(135deg, #FF9F43, #7856FF); }
+  html.ak-skin .main-wrapper { padding-bottom: 86px; }
+  html.ak-skin .pomo { bottom: calc(max(10px, var(--safe-bottom, 0px)) + 74px); }
+  .trk .ak-cal .d { min-height: 58px; padding: 5px; } .trk .ak-cal .d small { display: none; }
+}
+@media (max-width: 520px) { .trk .ak-cd b { font-size: 20px; } .trk .ak-huge { font-size: 30px; } .trk .ak-big { font-size: 36px; } }
+@media print { .ak-bnav { display: none !important; } }
+
+/* ---------------------------------------------------------------- 2. AKTrack skin */
+html.ak-skin[data-theme="dark"] {
+  --bg: #120A2F;
+  --bg-gradient: radial-gradient(circle at 12% 8%, rgba(255,159,67,.20) 0, transparent 32%), radial-gradient(circle at 88% 12%, rgba(120,86,255,.30) 0, transparent 36%), radial-gradient(circle at 60% 96%, rgba(53,200,244,.14) 0, transparent 38%), linear-gradient(#120A2F, #120A2F);
+  --glass-surface: rgba(34, 21, 82, .66); --glass-border: rgba(160, 140, 255, .20); --glass-hover: rgba(255,255,255,.06);
+  --text-main: #F8F9FF; --text-muted: #C2BCE3; --text-dim: #938BC0;
+  --accent: #FF9F43; --accent-hover: #ff8a1f; --accent-glow: rgba(255,159,67,.32);
+  --orange: #FF9F43; --purple: #7856FF; --blue: #6495ED; --teal: #20C9A6; --pink: #B388FF; --red: #FF5B6E; --green: #20C9A6; --amber: #F7C948;
+  --surface-2: rgba(255,255,255,.05); --surface-3: rgba(8,4,28,.38); --border-subtle: rgba(255,255,255,.08);
+  --shadow-glass: 0 14px 44px -14px rgba(0,0,0,.6);
+  --grad-brand: linear-gradient(135deg, #FF9F43, #7856FF); --xp-grad: linear-gradient(90deg, #FF9F43, #FF5B6E, #7856FF);
+  --card-border-grad: linear-gradient(135deg, rgba(255,159,67,.36), rgba(255,255,255,.04) 42%, rgba(120,86,255,.38));
+  --overlay-scrim: rgba(6, 3, 22, .82);
+  --hm-1: rgba(255,159,67,.3); --hm-2: rgba(255,159,67,.52); --hm-3: rgba(255,91,110,.72); --hm-4: #FF5B6E;
+}
+html.ak-skin[data-theme="light"] {
+  --bg: #F3F1FC;
+  --bg-gradient: radial-gradient(circle at 12% 8%, rgba(255,159,67,.16) 0, transparent 34%), radial-gradient(circle at 88% 12%, rgba(120,86,255,.14) 0, transparent 36%), linear-gradient(#F3F1FC, #F3F1FC);
+  --glass-surface: rgba(255,255,255,.93); --glass-border: rgba(70,45,170,.16); --glass-hover: rgba(40,20,120,.05);
+  --text-main: #19123A !important; --text-muted: #4D4675 !important; --text-dim: #756E9C !important;
+  --accent: #F08A24; --orange: #F08A24; --purple: #6A45F5; --blue: #4F7BDB; --teal: #12A88A; --pink: #8E6BE8; --red: #E8435A; --green: #12A88A; --amber: #D9A400;
+  --surface-2: rgba(40,20,120,.045); --surface-3: rgba(40,20,120,.06); --border-subtle: rgba(40,20,120,.09);
+  --shadow-glass: 0 12px 34px -16px rgba(50,30,130,.25);
+  --grad-brand: linear-gradient(135deg, #FF9F43, #7856FF);
+  --overlay-scrim: rgba(40, 30, 90, .42);
+}
+html.ak-skin body { font-size: 14px; }
+html.ak-skin[data-theme="dark"] .top-header { background: color-mix(in srgb, #120A2F 72%, transparent); }
+html.ak-skin[data-theme="light"] .top-header { background: color-mix(in srgb, #F3F1FC 80%, transparent); }
+html.ak-skin[data-theme="dark"] .sidebar { background: rgba(34, 21, 82, .66); }
+
+/* brand */
+html.ak-skin .brand-text h1 { font-weight: 800; font-size: 19px; background: linear-gradient(90deg, #FF9F43, #7856FF 70%, #35C8F4); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html.ak-skin .sidebar-profile { background: linear-gradient(135deg, rgba(255,159,67,.16), rgba(120,86,255,.16)); border: 1px solid var(--glass-border); border-radius: 14px; }
+
+/* colour-tiled navigation */
+html.ak-skin .nav-item { font-weight: 600; font-size: 13.5px; border: 1px solid transparent; border-radius: 10px; padding: 7px 10px; color: var(--text-muted); background: none; }
+html.ak-skin .nav-item::before { display: none; }
+html.ak-skin .nav-item .nav-ico { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; font-size: 13px; flex-shrink: 0;
+  background: color-mix(in srgb, var(--c, #FF9F43) 18%, transparent); color: var(--c, #FF9F43); }
+html.ak-skin .nav-item:hover { background: var(--surface-2); color: var(--text-main); }
+html.ak-skin .nav-item.active, html.ak-skin .nav-item.active.accent-green, html.ak-skin .nav-item.active.accent-teal, html.ak-skin .nav-item.active.accent-orange, html.ak-skin .nav-item.active.accent-pink {
+  background: color-mix(in srgb, var(--c, #FF9F43) 15%, transparent); color: var(--text-main); border-color: color-mix(in srgb, var(--c, #FF9F43) 40%, transparent); }
+html.ak-skin .nav-item.active .nav-ico { background: var(--c, #FF9F43); color: #fff; box-shadow: 0 6px 16px -6px var(--c, #FF9F43); }
+html.ak-skin .nav-item.accent-green, html.ak-skin .nav-item.accent-teal, html.ak-skin .nav-item.accent-orange, html.ak-skin .nav-item.accent-pink { color: var(--text-muted); background: none; }
+html.ak-skin .nav-group-head { letter-spacing: 1px; }
+@media (min-width: 1025px) { html.ak-skin body.sb-collapsed .nav-item { padding: 7px 0; } }
+
+/* cards, buttons, inputs */
+html.ak-skin .glass-card { border-radius: 20px; }
+html.ak-skin .btn-primary { background: linear-gradient(135deg, #FF9F43, #7856FF); color: #fff; box-shadow: 0 8px 22px -8px rgba(120,86,255,.75); }
+html.ak-skin .btn-primary:hover:not(:disabled) { filter: brightness(1.08); }
+html.ak-skin .form-control:focus { border-color: #FF9F43; box-shadow: 0 0 0 3px rgba(255,159,67,.22); outline: none; }
+html.ak-skin ::-webkit-scrollbar-thumb { background: rgba(120,86,255,.45); border-radius: 8px; }
+.ak-sep { border: none; height: 1px; background: var(--glass-border); margin: 8px 0 24px; }
+.trk #sub-table input[data-sf="name"], .trk #sub-table input[data-sf="short"] { text-align: left; }
+.trk #sub-table input[data-sf="order"] { text-align: center; }

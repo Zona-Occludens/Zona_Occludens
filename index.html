@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="dark" class="ak-skin">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
@@ -18,6 +18,7 @@
       try {
         var t = localStorage.getItem('zona-theme');
         if (['dark', 'light', 'oled', 'midnight', 'solarized'].indexOf(t) > -1) document.documentElement.setAttribute('data-theme', t);
+        document.documentElement.classList.toggle('ak-skin', localStorage.getItem('zona-skin') !== 'classic');   /* v4.1 AKTrack interface (default) */
         if (location.hash === '#admin') location.replace('admin.html');
       } catch (e) {}
     })();
@@ -1257,6 +1258,8 @@
   </style>
   <link rel="stylesheet" href="zona-themes.css">
   <link rel="stylesheet" href="zona-upgrade.css">
+  <link rel="stylesheet" href="zona-tracker.css">
+  <link rel="stylesheet" href="zona-aktrack.css">
 </head>
 <body>
   <a class="skip-link" href="#main" onclick="document.getElementById('main').focus()">Skip to main content</a>
@@ -1298,7 +1301,8 @@
         <div class="nav-group" data-group="study">
           <button class="nav-group-head" aria-expanded="true"><span>Study Planner</span><i class="fas fa-chevron-down" aria-hidden="true"></i></button>
           <div class="nav-group-body"><div class="nav-inner">
-            <div class="nav-item" data-page="planner" data-title="Daily Planner" data-tip="Daily Planner" onclick="navTo('planner', this)"><i class="fas fa-calendar-check nav-ico" aria-hidden="true"></i><span class="nav-label">Daily Planner</span></div>
+            <div class="nav-item" data-page="ak-planner" data-title="Daily Planner" data-tip="Daily Planner (tasks)" onclick="navTo('ak-planner', this)"><i class="fas fa-calendar-day nav-ico" aria-hidden="true"></i><span class="nav-label">Daily Planner</span></div>
+            <div class="nav-item" data-page="planner" data-title="Classic Planner" data-tip="Classic Planner" onclick="navTo('planner', this)"><i class="fas fa-calendar-check nav-ico" aria-hidden="true"></i><span class="nav-label">Classic Planner</span></div>
             <div class="nav-item" data-page="mcq-practice" data-title="MCQ Practice" data-tip="MCQ Practice" onclick="navTo('mcq-practice', this)"><i class="fas fa-bullseye nav-ico" aria-hidden="true"></i><span class="nav-label">MCQ Practice</span></div>
             <div class="nav-item accent-orange" data-page="revision-schedule" data-title="Last 40 Days Strategy" data-tip="Last 40 Days Strategy" onclick="navTo('revision-schedule', this)"><i class="fas fa-trophy nav-ico" aria-hidden="true"></i><span class="nav-label">Last 40 Days Strategy</span></div>
           </div></div>
@@ -1328,8 +1332,12 @@
           <div class="nav-group-body"><div class="nav-inner">
             <div class="nav-item" data-page="upcoming-tests" data-title="Upcoming Tests" data-tip="Upcoming Tests" onclick="navTo('upcoming-tests', this)"><i class="fas fa-clock nav-ico" aria-hidden="true"></i><span class="nav-label">Upcoming Tests</span></div>
             <div class="nav-item" data-page="test-entry" data-title="Log a Test" data-tip="Log a Test" onclick="navTo('test-entry', this)"><i class="fas fa-pen-to-square nav-ico" aria-hidden="true"></i><span class="nav-label">Log a Test</span></div>
+            <div class="nav-item accent-orange" data-page="test-log" data-title="Detailed Test Log" data-tip="Detailed Test Log" onclick="navTo('test-log', this)"><i class="fas fa-file-pen nav-ico" aria-hidden="true"></i><span class="nav-label">Detailed Test Log</span></div>
             <div class="nav-item" data-page="test-records" data-title="Test Records" data-tip="Test Records" onclick="navTo('test-records', this)"><i class="fas fa-folder-open nav-ico" aria-hidden="true"></i><span class="nav-label">Test Records</span></div>
+            <div class="nav-item" data-page="test-history" data-title="Test History" data-tip="Test History" onclick="navTo('test-history', this)"><i class="fas fa-rectangle-list nav-ico" aria-hidden="true"></i><span class="nav-label">Test History</span></div>
+            <div class="nav-item" data-page="test-view" data-title="Test Record" data-tip="Test Record" style="display:none" aria-hidden="true"><i class="fas fa-file-lines nav-ico" aria-hidden="true"></i><span class="nav-label">Test Record</span></div>
             <div class="nav-item" data-page="error-log" data-title="Mistake Notebook" data-tip="Mistake Notebook" onclick="navTo('error-log', this)"><i class="fas fa-triangle-exclamation nav-ico" aria-hidden="true"></i><span class="nav-label">Mistake Notebook</span></div>
+            <div class="nav-item" data-page="mistake-revision" data-title="Mistake Log &amp; Revision" data-tip="Mistake Log &amp; Revision" onclick="navTo('mistake-revision', this)"><i class="fas fa-rotate nav-ico" aria-hidden="true"></i><span class="nav-label">Mistake Log &amp; Revision</span></div>
             <div class="nav-item accent-orange" data-page="upsc-cms-pyts" data-title="UPSC CMS PYTs" data-tip="UPSC CMS PYTs" onclick="navTo('upsc-cms-pyts', this)"><i class="fas fa-landmark nav-ico" aria-hidden="true"></i><span class="nav-label">UPSC CMS</span></div>
           </div></div>
         </div>
@@ -1346,6 +1354,10 @@
           <button class="nav-group-head" aria-expanded="true"><span>Analytics</span><i class="fas fa-chevron-down" aria-hidden="true"></i></button>
           <div class="nav-group-body"><div class="nav-inner">
             <div class="nav-item" data-page="stw" data-title="Study Time Analytics" data-tip="Study Time Analytics" onclick="navTo('stw', this)"><i class="fas fa-hourglass-half nav-ico" aria-hidden="true"></i><span class="nav-label">Study Time Analytics</span></div>
+            <div class="nav-item" data-page="test-trends" data-title="Test Trends" data-tip="Test Trends" onclick="navTo('test-trends', this)"><i class="fas fa-chart-line nav-ico" aria-hidden="true"></i><span class="nav-label">Test Trends</span></div>
+            <div class="nav-item" data-page="subject-analytics" data-title="Subject Analytics" data-tip="Subject Analytics" onclick="navTo('subject-analytics', this)"><i class="fas fa-layer-group nav-ico" aria-hidden="true"></i><span class="nav-label">Subject Analytics</span></div>
+            <div class="nav-item" data-page="test-weightage" data-title="Weightage Predictor" data-tip="Weightage Predictor" onclick="navTo('test-weightage', this)"><i class="fas fa-scale-balanced nav-ico" aria-hidden="true"></i><span class="nav-label">Weightage Predictor</span></div>
+            <div class="nav-item" data-page="reports" data-title="Reports &amp; Exports" data-tip="Reports &amp; Exports" onclick="navTo('reports', this)"><i class="fas fa-file-export nav-ico" aria-hidden="true"></i><span class="nav-label">Reports &amp; Exports</span></div>
           </div></div>
         </div>
 
@@ -1427,6 +1439,11 @@
         
         <!-- ================= DASHBOARD ================= -->
         <div id="page-dashboard" class="page active">
+          <!-- v4.1: AKTrack dashboard: countdowns, streak, today's goal, XP, coins (zona-aktrack.js) -->
+          <div id="akDashTop" class="trk"></div>
+          <!-- v4: test performance analytics (cards, 10 charts, heatmaps). Rendered by zona-tracker-analytics.js -->
+          <div id="trkDashHost" class="trk"></div>
+          <hr class="ak-sep" aria-hidden="true">
           <div class="motivational-quote" id="motivationalQuote" style="font-style: italic; font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 24px; padding: 16px; background: rgba(0,0,0,0.2); border-radius: var(--radius-sm); border: 1px dashed var(--glass-border);">
             "The difference between ordinary and extraordinary is that little extra."
           </div>
@@ -1505,6 +1522,7 @@
             <p class="sub-text" style="margin-bottom: 16px;">Top 10 subjects by completed topic count.</p>
             <div class="chart-wrap" style="height: 260px;"><canvas id="subjectVolumeChart"></canvas></div>
           </div>
+
         </div>
 
         <!-- ================= SUBJECT PROGRESS BAR ================= -->
@@ -1555,6 +1573,7 @@
 
         <!-- ================= UPCOMING TESTS ================= -->
         <div id="page-upcoming-tests" class="page">
+          <div id="akUpTop" class="trk"></div>
           <div class="grid-2">
             <div class="glass-card">
               <h2 class="h2-title"><i class="fas fa-calendar-plus mr-2 text-blue-400"></i> Schedule New Test</h2>
@@ -1564,15 +1583,25 @@
               <div class="form-group"><label class="form-label">Test Type</label>
                 <select class="form-control" id="up-type">
                   <option value="GT">Grand Test</option><option value="Mock">Mock Test</option><option value="SWT">Subject-Wise Test</option>
+                  <option value="Daily">Daily Practice target</option><option value="Custom">Custom Test</option>
                 </select>
               </div>
+              <!-- v4: optional details -->
+              <div class="grid-2" style="gap:16px;">
+                <div class="form-group"><label class="form-label">Time (optional)</label><input type="time" class="form-control" id="up-time"></div>
+                <div class="form-group"><label class="form-label">Priority</label>
+                  <select class="form-control" id="up-priority"><option value="High">High</option><option value="Medium" selected>Medium</option><option value="Low">Low</option></select>
+                </div>
+              </div>
+              <div class="form-group"><label class="form-label">Provider (optional)</label><input type="text" class="form-control" id="up-provider" maxlength="80" placeholder="e.g. Marrow, PrepLadder, DAMS"></div>
+              <div class="form-group"><label class="form-label">Subjects (optional)</label><input type="text" class="form-control" id="up-subjects" maxlength="400" placeholder="e.g. All subjects, or Medicine + Surgery"></div>
               <button class="btn btn-primary w-full" onclick="addUpcomingTest()"><i class="fas fa-calendar-check mr-2"></i> Schedule Test</button>
             </div>
             <div class="glass-card">
               <h2 class="h2-title"><i class="fas fa-list-ul mr-2 text-purple-400"></i> Upcoming Schedule</h2>
               <div class="table-container-wrapper" style="max-height: 450px;">
                 <table class="rev-table" id="upcomingRecordsTable">
-                  <thead><tr><th>Date</th><th>Test Name</th><th>Type</th><th>Action</th></tr></thead>
+                  <thead><tr><th>Date</th><th>Test Name</th><th>Type</th><th>Priority</th><th>Status</th><th>Actions</th></tr></thead>
                   <tbody></tbody>
                 </table>
               </div>
@@ -1691,6 +1720,7 @@
 
         <!-- ================= TEST ENTRY ================= -->
         <div id="page-test-entry" class="page">
+          <div class="trk-strip"><span><i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i>Quick entry below. For a permanent Test ID, subject-wise breakdown and mistakes linked to the test, use the Detailed Test Log.</span><button class="btn btn-sm btn-outline" onclick="navToPage('test-log')">Detailed Test Log <i class="fas fa-arrow-right" aria-hidden="true"></i></button></div>
           <div class="glass-card" style="max-width: 900px; margin: 0 auto; border-top: 4px solid var(--blue);">
             <h2 class="h2-title" style="color:var(--blue); margin-bottom:24px;"><i class="fas fa-file-signature mr-2"></i> Log Test Performance</h2>
             <div class="grid-3" style="margin-top:20px;">
@@ -1796,6 +1826,7 @@
 
         <!-- ================= TEST RECORDS ================= -->
         <div id="page-test-records" class="page">
+          <div class="trk-strip"><span><i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i>Every test here also has a full record: subject table, linked mistakes, revision progress and PDF / Excel export.</span><button class="btn btn-sm btn-outline" onclick="navToPage('test-history')">Test History <i class="fas fa-arrow-right" aria-hidden="true"></i></button></div>
           <div class="glass-card">
             <h2 class="h2-title" style="color:var(--blue);"><i class="fas fa-folder-open mr-2"></i> Historical Records</h2>
             <div class="table-container-wrapper" style="max-height: 600px;">
@@ -1809,6 +1840,7 @@
 
         <!-- ================= ERROR LOG (TRACKER) ================= -->
         <div id="page-error-log" class="page">
+          <div class="trk-strip"><span><i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i>Track R1 / R2 / R3 revision of every mistake, with filters and exports.</span><button class="btn btn-sm btn-outline" onclick="navToPage('mistake-revision')">Mistake Log &amp; Revision <i class="fas fa-arrow-right" aria-hidden="true"></i></button></div>
           <div class="error-grid">
             <div class="glass-card" style="height:fit-content; border-top:4px solid var(--red);">
               <h2 class="h2-title" style="color:var(--red);"><i class="fas fa-triangle-exclamation mr-2"></i> Log Mistake</h2>
@@ -2031,6 +2063,8 @@
             </div>
             <div class="shop-grid" id="shopGrid"></div>
           </div>
+          <!-- v4: activity streaks + test / revision XP rules (zona-tracker-analytics.js) -->
+          <div id="trkRewardsHost" class="trk"></div>
         </div>
 
         <!-- ================= BADGE GALLERY ================= -->
@@ -2141,11 +2175,25 @@
         </div>           <!-- closes #page-mednotes -->
 
         <!-- ================= SETTINGS (rendered by zona-core.js) ================= -->
+        <!-- ================= v4: TEST & MISTAKE TRACKER PAGES (rendered by zona-tracker.js / zona-tracker-analytics.js) ================= -->
+        <div id="page-test-log" class="page"></div>
+        <div id="page-test-history" class="page"></div>
+        <!-- v4.1: AKTrack task planner (zona-aktrack.js) -->
+        <div id="page-ak-planner" class="page"></div>
+        <div id="page-test-view" class="page"></div>
+        <div id="page-mistake-revision" class="page"></div>
+        <div id="page-test-trends" class="page"></div>
+        <div id="page-subject-analytics" class="page"></div>
+        <div id="page-test-weightage" class="page"></div>
+        <div id="page-reports" class="page"></div>
+
         <div id="page-settings" class="page">
           <div class="glass-card" style="border-top:4px solid var(--orange); margin-bottom:16px;">
             <h2 class="h2-title" style="margin:0;"><i class="fas fa-gear mr-2" aria-hidden="true"></i> Settings</h2>
             <p class="sub-text" style="margin:4px 0 0 0;">Appearance, profile, notifications, backup &amp; sync, and security.</p>
           </div>
+          <!-- v4.1: Account & examination goals, Subject list, Topic library (zona-aktrack.js) -->
+          <div id="akSettingsHost"></div>
           <div id="settingsRoot"></div>
         </div>
 
@@ -2185,6 +2233,9 @@
       <div class="sc-row"><span>Daily Planner</span><span><span class="kbd">g</span> <span class="kbd">p</span></span></div>
       <div class="sc-row"><span>Daily MCQ Practice</span><span><span class="kbd">g</span> <span class="kbd">m</span></span></div>
       <div class="sc-row"><span>Topic Library</span><span><span class="kbd">g</span> <span class="kbd">t</span></span></div>
+      <div class="sc-row"><span>Detailed Test Log</span><span><span class="kbd">g</span> <span class="kbd">l</span></span></div>
+      <div class="sc-row"><span>Test History</span><span><span class="kbd">g</span> <span class="kbd">h</span></span></div>
+      <div class="sc-row"><span>Mistake Log &amp; Revision</span><span><span class="kbd">g</span> <span class="kbd">e</span></span></div>
       <div class="sc-row"><span>Quests &amp; Rewards</span><span><span class="kbd">g</span> <span class="kbd">r</span></span></div>
       <div class="sc-row"><span>Badge Gallery</span><span><span class="kbd">g</span> <span class="kbd">b</span></span></div>
       <div class="sc-row"><span>Study Time (STW)</span><span><span class="kbd">g</span> <span class="kbd">s</span></span></div>
@@ -2342,9 +2393,22 @@
       return Math.round((end - start) / (1000 * 60 * 60 * 24));
     }
 
-    const APP_PLANNER_START = '2026-06-27';
-    const APP_PLANNER_END = '2030-12-31';   // covers INICET May 2027; extend when you add later exam cycles
-    const APP_START_DATE = APP_PLANNER_START;
+    let APP_PLANNER_START = '2026-06-27';
+    let APP_PLANNER_END = '2030-12-31';   // v4.1: replaced by the planner period from Settings (applyPlannerPeriod)
+    const APP_START_DATE = '2026-06-27';  // fixed anchor for streak history and study-time analytics
+    /* v4.1: the classic planner follows Settings → Planner start / end, widened so a day that already holds data is never hidden */
+    function applyPlannerPeriod() {
+      const a = state && state.akSettings, ok = v => typeof v === 'string' && ISO_DATE_RE.test(v);
+      if (!a || !ok(a.plannerStart) || !ok(a.plannerEnd) || a.plannerStart > a.plannerEnd) return;
+      let lo = a.plannerStart, hi = a.plannerEnd;
+      Object.keys(state.planner || {}).forEach(d => {
+        const e = state.planner[d];
+        if (!ok(d) || !e || typeof e !== 'object' || Array.isArray(e)) return;
+        if ((e.targets && e.targets.length) || e.notes || e.subject || e.dayFinished || e.starClaimed) { if (d < lo) lo = d; if (d > hi) hi = d; }
+      });
+      APP_PLANNER_START = lo; APP_PLANNER_END = hi;
+    }
+    window.applyPlannerPeriod = applyPlannerPeriod;
 
     const MOTIVATIONAL_QUOTES = Object.freeze([
       "The difference between ordinary and extraordinary is that little extra.",
@@ -2410,7 +2474,7 @@
       if (!s || typeof s !== 'object') return s;
       const arr = k => { if (!Array.isArray(s[k])) s[k] = []; };
       const obj = k => { if (!s[k] || typeof s[k] !== 'object' || Array.isArray(s[k])) s[k] = {}; };
-      ['tests', 'errors', 'mcqPractice', 'upcomingTests'].forEach(arr);
+      ['tests', 'errors', 'mcqPractice', 'upcomingTests', 'plannerTasks', 'topicLibrary'].forEach(arr);
       ['masterTopics', 'planner', 'errorTracker', 'subjectProgress'].forEach(obj);
       if (!s.upscCmsPyts || typeof s.upscCmsPyts !== 'object') s.upscCmsPyts = { selectedSubject: 'ALL', topics: {} };
       if (!s.streak || typeof s.streak !== 'object') s.streak = { count: 0, lastDate: null, cards: 3, history: [], pendingRepair: false };
@@ -4756,6 +4820,7 @@
 
     // --- Ultimate Planner (May 17 - Nov 1) ---
     function setupPlanner() {
+      try { applyPlannerPeriod(); } catch (e) {}
       const start = new Date(`${APP_PLANNER_START}T00:00:00`); const end = new Date(`${APP_PLANNER_END}T00:00:00`); let curr = new Date(start);
       while(curr <= end) {
         let dStr = getLocalDateString(curr);
@@ -6341,7 +6406,7 @@ if (ctxT) {
 
         // keyboard shortcuts: g d / g p / g m ... , ?, f, \
         let gAt = 0;
-        const GO = { d: 'dashboard', p: 'planner', m: 'mcq-practice', t: 'master-tracker', r: 'rewards', b: 'badges', s: 'stw', u: 'guidelines', n: 'mednotes' };
+        const GO = { d: 'dashboard', p: 'planner', m: 'mcq-practice', t: 'master-tracker', r: 'rewards', b: 'badges', s: 'stw', u: 'guidelines', n: 'mednotes', l: 'test-log', h: 'test-history', e: 'mistake-revision' };
         document.addEventListener('keydown', e => {
           if (e.ctrlKey || e.metaKey || e.altKey) return;
           const k = e.key;
@@ -6679,6 +6744,11 @@ if (ctxT) {
   <script src="zona-content.js"></script>
   <script src="zona-planner.js"></script>
   <script src="zona-onboarding.js"></script>
+  <!-- v4: test & mistake tracker (engine is shared with code.gs) -->
+  <script src="zona-tracker-engine.js"></script>
+  <script src="zona-tracker.js"></script>
+  <script src="zona-tracker-analytics.js"></script>
+  <script src="zona-aktrack.js"></script>
   <script src="zona-boot.js"></script>
 </body>
 </html>

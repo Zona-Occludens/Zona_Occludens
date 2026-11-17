@@ -21,7 +21,7 @@
 (function () {
   'use strict';
   const CFG = window.ZONA_CONFIG || {};
-  const Zona = window.Zona = { version: '3.0.0', deleting: false, origin: (location.origin === 'null' ? '*' : location.origin) };   // postMessage target for our own iframes
+  const Zona = window.Zona = { version: '4.1.0', deleting: false, origin: (location.origin === 'null' ? '*' : location.origin) };   // postMessage target for our own iframes
 
   /* ------------------------------------------------------------------ util */
   const util = Zona.util = {};
@@ -349,6 +349,7 @@
   /* ------------------------------------------------------------------ sync */
   const DIRTY_KEY = 'zona-dirty', BACKUP_KEY = 'zona-last-backup';
   const sync = Zona.sync = { ver: 0, inflight: false, again: false, status: 'idle', timer: null, backoff: 0, blockedUntil: 0, lastOk: 0 };
+  sync.nonce = util.randHex(6);
   sync.isDirty = () => util.ls.get(DIRTY_KEY) === '1';
   sync.setStatus = function (kind, detail) {
     sync.status = kind;
@@ -383,7 +384,8 @@
     const startVer = sync.ver;
     sync.inflight = true; sync.setStatus('syncing');
     try {
-      await call('save', { payload: state, upscPytsState: (typeof getUpscPytsStatePayload === 'function') ? getUpscPytsStatePayload() : undefined });
+      // v4: every save carries an operation ID (session nonce + change counter), so a retried request is never written twice
+      await call('save', { payload: state, opId: sync.nonce + '-' + startVer, upscPytsState: (typeof getUpscPytsStatePayload === 'function') ? getUpscPytsStatePayload() : undefined });
       sync.lastOk = Date.now(); sync.backoff = 0; sync.blockedUntil = 0;
       if (sync.ver === startVer) { util.ls.del(DIRTY_KEY); try { needsSync = false; } catch (e) {} sync.setStatus('synced', 'Last synced ' + new Date().toLocaleTimeString()); }
       else sync.schedule(400);
@@ -623,7 +625,8 @@
   /** Non-destructive merge: never loses progress on either side. */
   data.merge = function (local, inc) {
     const out = Object.assign({}, local);
-    ['tests', 'errors', 'mcqPractice', 'upcomingTests'].forEach(k => { out[k] = unionById(local[k], inc[k]); });
+    ['tests', 'errors', 'mcqPractice', 'upcomingTests', 'plannerTasks', 'topicLibrary'].forEach(k => { out[k] = unionById(local[k], inc[k]); });
+    ['akSettings', 'akSubjects'].forEach(k => { if (local[k] === undefined && inc[k] !== undefined) out[k] = inc[k]; });   // v4.1: this device's settings win
     const mt = Object.assign({}, local.masterTopics || {});
     Object.keys(inc.masterTopics || {}).forEach(id => {
       const a = mt[id], b = inc.masterTopics[id];
@@ -657,6 +660,14 @@
     if (inc.medNotes && !local.medNotes) out.medNotes = inc.medNotes;
     if (inc.errorTracker) out.errorTracker = Object.assign({}, inc.errorTracker, local.errorTracker || {});
     if (inc.guidelines && isObj(inc.guidelines.checks)) out.guidelines = { checks: Object.assign({}, inc.guidelines.checks, (local.guidelines && local.guidelines.checks) || {}) };
+    // v4 tracker: tests / mistakes were merged by id above; reserved IDs and manual weightage are unioned, local wins on conflict
+    if (isObj(inc.tracker)) {
+      const lt = isObj(local.tracker) ? local.tracker : {};
+      out.tracker = Object.assign({}, inc.tracker, lt, {
+        usedIds: Object.assign({}, isObj(inc.tracker.usedIds) ? inc.tracker.usedIds : {}, isObj(lt.usedIds) ? lt.usedIds : {}),
+        weights: Object.assign({}, isObj(inc.tracker.weights) ? inc.tracker.weights : {}, isObj(lt.weights) ? lt.weights : {})
+      });
+    }
     return out;
   };
   data.importFile = async function (file) {

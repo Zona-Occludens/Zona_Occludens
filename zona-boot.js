@@ -44,6 +44,7 @@
       if (isPageActive('stw')) renderStw();
       if (isPageActive('planner')) renderPlanner.now();
       renderStreak();
+      if (window.ZonaTracker) window.ZonaTracker.rerender();      // v4: tracker charts follow the theme too
     } catch (e) { console.warn('chart rebuild', e); }
   }, 120);
   Z.bus.on('theme', function (id) {
@@ -88,11 +89,18 @@
     syllabus: () => Z.syllabus.render(),
     rewards: () => setTimeout(() => Z.social.renderLeaderboard(), 0),
     planner: () => window.ZonaPlanner.init(),
-    dashboard: () => window.renderTodayTomorrow(),
+    dashboard: () => { window.renderTodayTomorrow(); if (T) T.renderDash(); },
     guidelines: () => window.Guidelines.enter()
   };
+  /* v4: tracker pages (each renders lazily when opened) */
+  const T = window.ZonaTracker || null;
+  if (T) {
+    Object.keys(T.RENDER).forEach(p => { hooks[p] = () => T.render(p); });
+    const _rw = hooks.rewards; hooks.rewards = () => { _rw(); T.renderRewardsExtra(); };
+  }
   window._navToImpl = function (pageId) {
     if (pageId !== 'guidelines') window.Guidelines.leave();
+    if (T) T.leave();                                             // v4: free the previous page's charts
     _nav.apply(this, arguments);
     document.body.classList.toggle('on-guidelines', pageId === 'guidelines');
     document.body.classList.toggle('on-embed', pageId === 'mednotes' || pageId === 'guidelines');
@@ -108,6 +116,10 @@
     U.settings();
     window.ZonaPlanner.init();
     window.renderTodayTomorrow();
+    if (T) {                                                      // v4: old tests / notebook entries get their permanent IDs, then the analytics draw
+      T.sync();
+      try { if (isPageActive('dashboard')) { T.leave(); T.renderDash(); } else T.rerender(); } catch (e) { console.error('[tracker] init', e); }
+    }
     window.dispatchEvent(new Event('resize'));
     if (!Z._announced) { Z._announced = true; setTimeout(Z.social.announcements, 3000); }
     Z.bus.emit('ready');
